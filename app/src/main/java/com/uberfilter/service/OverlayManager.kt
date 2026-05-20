@@ -111,155 +111,105 @@ class OverlayManager(private val context: Context) {
 
 @Composable
 private fun RidePopup(offer: RideOffer, evaluation: RideEvaluation) {
-    val bgColor    = if (evaluation.isGood) Color(0xFF1B8C3E) else Color(0xFFB71C1C)
-    val labelColor = Color.White.copy(alpha = 0.70f)
-    val label      = if (evaluation.isGood) "BOA CORRIDA" else "CORRIDA RUIM"
+    val bgColor = if (evaluation.isGood) Color(0xFF2E7D32) else Color(0xFFB71C1C)
 
     Box(
         modifier = Modifier
-            .width(280.dp)
-            .background(bgColor, RoundedCornerShape(18.dp))
-            .padding(horizontal = 24.dp, vertical = 20.dp),
-        contentAlignment = Alignment.Center
+            .width(300.dp)
+            .background(bgColor, RoundedCornerShape(14.dp))
+            .padding(horizontal = 20.dp, vertical = 14.dp)
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
+        Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
 
-            // ── Título ──────────────────────────────────────────────────────
-            Text(
-                text = label,
-                color = Color.White,
-                fontWeight = FontWeight.ExtraBold,
-                fontSize = 22.sp,
-                letterSpacing = 1.sp
+            // ── Linha: Valor total ───────────────────────────────────────────
+            MetricRow(
+                label = "Valor total",
+                value = "R$ ${"%.2f".format(offer.effectiveValue)}"
             )
 
-            Spacer(Modifier.height(2.dp))
-
-            // ── Valor total ─────────────────────────────────────────────────
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("Valor total", color = labelColor, fontSize = 14.sp)
-                Text(
-                    text = "R$ ${"%.2f".format(offer.effectiveValue)}",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 22.sp
-                )
-            }
-
-            // ── R$/hora ─────────────────────────────────────────────────────
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("R$/hora", color = labelColor, fontSize = 14.sp)
-                Text(
-                    text = "R$ ${"%.2f".format(offer.valuePerHour)}",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 22.sp
-                )
-            }
-
-            // ── R$/km ────────────────────────────────────────────────────────
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("R$/km", color = labelColor, fontSize = 14.sp)
-                Text(
-                    text = "R$ ${"%.2f".format(offer.valuePerKm)}",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 22.sp
-                )
-            }
-
-            // ── Divisor ─────────────────────────────────────────────────────
-            Spacer(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(Color.White.copy(alpha = 0.25f))
+            // ── Linha: R$/hora ───────────────────────────────────────────────
+            MetricRow(
+                label = "R$/hora",
+                value = "R$ ${"%.2f".format(offer.valuePerHour)}"
             )
 
-            // ── Distância e duração ─────────────────────────────────────────
+            // ── Linha: R$/km ─────────────────────────────────────────────────
+            MetricRow(
+                label = "R$/km",
+                value = "R$ ${"%.2f".format(offer.valuePerKm)}"
+            )
+
+            Spacer(Modifier.height(12.dp))
+
+            // ── Rodapé: Distância | Passageiro | Duração ─────────────────────
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(horizontalAlignment = Alignment.Start) {
-                    Text("Distância", color = labelColor, fontSize = 13.sp)
-                    Text(
-                        "${"%.1f".format(offer.tripDistanceKm)} km",
-                        color = Color.White,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 17.sp
-                    )
-                }
-                Column(horizontalAlignment = Alignment.End) {
-                    Text("Duração", color = labelColor, fontSize = 13.sp)
-                    Text(
-                        "${offer.tripDurationMin} min",
-                        color = Color.White,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 17.sp
-                    )
-                }
-            }
-
-            // ── Busca até passageiro ────────────────────────────────────────
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column(horizontalAlignment = Alignment.Start) {
-                    Text("Busca", color = labelColor, fontSize = 13.sp)
-                    Text(
-                        "${"%.1f".format(offer.distanceToPickupKm)} km • ${offer.minutesToPickup} min",
-                        color = Color.White,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 15.sp
-                    )
-                }
-                Column(horizontalAlignment = Alignment.End) {
-                    Text("Passageiro", color = labelColor, fontSize = 13.sp)
-                    Text(
-                        "⭐ ${"%.2f".format(offer.passengerRating)}",
-                        color = Color.White,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 15.sp
-                    )
-                }
-            }
-
-            // ── Motivos (somente se RUIM) ───────────────────────────────────
-            if (!evaluation.isGood) {
-                Spacer(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(1.dp)
-                        .background(Color.White.copy(alpha = 0.25f))
+                FooterItem(
+                    top = "Distância",
+                    bottom = "${"%.1f".format(offer.distanceToPickupKm + offer.tripDistanceKm)} km",
+                    alignment = Alignment.Start
                 )
-                evaluation.reasons.take(3).forEach { reason ->
-                    Text(
-                        text = "• $reason",
-                        color = Color.White.copy(alpha = 0.85f),
-                        fontSize = 13.sp,
-                        lineHeight = 17.sp,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
+                FooterItem(
+                    top = "Passageiro",
+                    bottom = "★ ${"%.2f".format(offer.passengerRating)}",
+                    alignment = Alignment.CenterHorizontally
+                )
+                FooterItem(
+                    top = "Duração",
+                    bottom = "${offer.minutesToPickup + offer.tripDurationMin} min",
+                    alignment = Alignment.End
+                )
             }
         }
+    }
+}
+
+@Composable
+private fun MetricRow(label: String, value: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 5.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            color = Color.White.copy(alpha = 0.80f),
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Normal
+        )
+        Text(
+            text = value,
+            color = Color.White,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+private fun FooterItem(
+    top: String,
+    bottom: String,
+    alignment: Alignment.Horizontal
+) {
+    Column(horizontalAlignment = alignment) {
+        Text(
+            text = top,
+            color = Color.White.copy(alpha = 0.75f),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Normal
+        )
+        Text(
+            text = bottom,
+            color = Color.White,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
 
