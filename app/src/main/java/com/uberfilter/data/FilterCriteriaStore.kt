@@ -16,6 +16,7 @@ class FilterCriteriaStore(private val context: Context) {
     companion object {
         val MIN_TOTAL_VALUE      = doublePreferencesKey("min_total_value")
         val MIN_VALUE_PER_KM     = doublePreferencesKey("min_value_per_km")
+        val MIN_VALUE_PER_HOUR   = doublePreferencesKey("min_value_per_hour")
         val MIN_PASSENGER_RATING = doublePreferencesKey("min_passenger_rating")
         val MAX_PICKUP_DIST_KM   = doublePreferencesKey("max_pickup_dist_km")
         val MAX_PICKUP_MINUTES   = intPreferencesKey("max_pickup_minutes")
@@ -28,6 +29,7 @@ class FilterCriteriaStore(private val context: Context) {
         FilterCriteria(
             minTotalValue       = prefs[MIN_TOTAL_VALUE]      ?: defaults.minTotalValue,
             minValuePerKm       = prefs[MIN_VALUE_PER_KM]     ?: defaults.minValuePerKm,
+            minValuePerHour     = prefs[MIN_VALUE_PER_HOUR]   ?: defaults.minValuePerHour,
             minPassengerRating  = prefs[MIN_PASSENGER_RATING] ?: defaults.minPassengerRating,
             maxPickupDistanceKm = prefs[MAX_PICKUP_DIST_KM]   ?: defaults.maxPickupDistanceKm,
             maxPickupMinutes    = prefs[MAX_PICKUP_MINUTES]   ?: defaults.maxPickupMinutes,
@@ -40,6 +42,7 @@ class FilterCriteriaStore(private val context: Context) {
         context.dataStore.edit { prefs ->
             prefs[MIN_TOTAL_VALUE]      = criteria.minTotalValue
             prefs[MIN_VALUE_PER_KM]     = criteria.minValuePerKm
+            prefs[MIN_VALUE_PER_HOUR]   = criteria.minValuePerHour
             prefs[MIN_PASSENGER_RATING] = criteria.minPassengerRating
             prefs[MAX_PICKUP_DIST_KM]   = criteria.maxPickupDistanceKm
             prefs[MAX_PICKUP_MINUTES]   = criteria.maxPickupMinutes

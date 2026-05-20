@@ -26,27 +26,26 @@ data class RideOffer(
     /** Receita por minuto */
     val valuePerMin: Double get() =
         if (tripDurationMin > 0) effectiveValue / tripDurationMin else 0.0
+
+    /** Receita por hora (viagem + tempo de busca do passageiro) */
+    val valuePerHour: Double get() {
+        val totalMin = tripDurationMin + minutesToPickup
+        return if (totalMin > 0) effectiveValue / totalMin * 60.0 else 0.0
+    }
 }
 
 /**
  * Critérios configuráveis pelo motorista.
- * Todos os limites são MÍNIMOS (ou MÁXIMOS onde indicado).
  */
 data class FilterCriteria(
-    // Valor
-    val minTotalValue: Double = 15.0,          // valor mínimo da corrida (R$)
-    val minValuePerKm: Double = 2.0,           // receita mínima por km (R$/km)
-
-    // Passageiro
-    val minPassengerRating: Double = 4.5,      // avaliação mínima do passageiro
-
-    // Distância até o passageiro
-    val maxPickupDistanceKm: Double = 3.0,     // distância máxima para buscar (km)
-    val maxPickupMinutes: Int = 8,             // tempo máximo para buscar (min)
-
-    // Viagem
-    val minTripDistanceKm: Double = 3.0,       // distância mínima da viagem (km)
-    val maxTripDurationMin: Int = 40           // duração máxima da viagem (min)
+    val minTotalValue: Double = 15.0,
+    val minValuePerKm: Double = 2.0,
+    val minValuePerHour: Double = 30.0,
+    val minPassengerRating: Double = 4.5,
+    val maxPickupDistanceKm: Double = 3.0,
+    val maxPickupMinutes: Int = 8,
+    val minTripDistanceKm: Double = 3.0,
+    val maxTripDurationMin: Int = 40
 )
 
 /**
@@ -54,5 +53,5 @@ data class FilterCriteria(
  */
 data class RideEvaluation(
     val isGood: Boolean,
-    val reasons: List<String>   // motivos que reprovaram ou aprovaram
+    val reasons: List<String>
 )

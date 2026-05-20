@@ -61,9 +61,9 @@ class OverlayManager(private val context: Context) {
                     WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
             PixelFormat.TRANSLUCENT
         ).apply {
-            gravity = Gravity.TOP or Gravity.END
-            x = 12
-            y = 120
+            gravity = Gravity.TOP
+            x = 0
+            y = 0
         }
 
         val lifecycleOwner = MyLifecycleOwner().also {
@@ -111,44 +111,151 @@ class OverlayManager(private val context: Context) {
 
 @Composable
 private fun RidePopup(offer: RideOffer, evaluation: RideEvaluation) {
-    val bgColor = if (evaluation.isGood) Color(0xFF1B8C3E) else Color(0xFFB71C1C)
-    val emoji   = if (evaluation.isGood) "✅" else "❌"
-    val label   = if (evaluation.isGood) "BOA CORRIDA" else "CORRIDA RUIM"
+    val bgColor    = if (evaluation.isGood) Color(0xFF1B8C3E) else Color(0xFFB71C1C)
+    val labelColor = Color.White.copy(alpha = 0.70f)
+    val label      = if (evaluation.isGood) "BOA CORRIDA" else "CORRIDA RUIM"
 
     Box(
         modifier = Modifier
-            .widthIn(min = 140.dp, max = 200.dp)
-            .background(bgColor, RoundedCornerShape(14.dp))
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .width(280.dp)
+            .background(bgColor, RoundedCornerShape(18.dp))
+            .padding(horizontal = 24.dp, vertical = 20.dp),
         contentAlignment = Alignment.Center
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(emoji, fontSize = 30.sp)
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+
+            // ── Título ──────────────────────────────────────────────────────
             Text(
                 text = label,
                 color = Color.White,
                 fontWeight = FontWeight.ExtraBold,
-                fontSize = 15.sp
+                fontSize = 22.sp,
+                letterSpacing = 1.sp
             )
-            Text(
-                text = "R$ ${"%.2f".format(offer.effectiveValue)}",
-                color = Color.White.copy(alpha = 0.92f),
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
+
+            Spacer(Modifier.height(2.dp))
+
+            // ── Valor total ─────────────────────────────────────────────────
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Valor total", color = labelColor, fontSize = 14.sp)
+                Text(
+                    text = "R$ ${"%.2f".format(offer.effectiveValue)}",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 22.sp
+                )
+            }
+
+            // ── R$/hora ─────────────────────────────────────────────────────
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("R$/hora", color = labelColor, fontSize = 14.sp)
+                Text(
+                    text = "R$ ${"%.2f".format(offer.valuePerHour)}",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 22.sp
+                )
+            }
+
+            // ── R$/km ────────────────────────────────────────────────────────
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("R$/km", color = labelColor, fontSize = 14.sp)
+                Text(
+                    text = "R$ ${"%.2f".format(offer.valuePerKm)}",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 22.sp
+                )
+            }
+
+            // ── Divisor ─────────────────────────────────────────────────────
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(Color.White.copy(alpha = 0.25f))
             )
-            Text(
-                text = "${"%.1f".format(offer.tripDistanceKm)} km • ${offer.tripDurationMin} min",
-                color = Color.White.copy(alpha = 0.80f),
-                fontSize = 12.sp
-            )
+
+            // ── Distância e duração ─────────────────────────────────────────
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(horizontalAlignment = Alignment.Start) {
+                    Text("Distância", color = labelColor, fontSize = 13.sp)
+                    Text(
+                        "${"%.1f".format(offer.tripDistanceKm)} km",
+                        color = Color.White,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 17.sp
+                    )
+                }
+                Column(horizontalAlignment = Alignment.End) {
+                    Text("Duração", color = labelColor, fontSize = 13.sp)
+                    Text(
+                        "${offer.tripDurationMin} min",
+                        color = Color.White,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 17.sp
+                    )
+                }
+            }
+
+            // ── Busca até passageiro ────────────────────────────────────────
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(horizontalAlignment = Alignment.Start) {
+                    Text("Busca", color = labelColor, fontSize = 13.sp)
+                    Text(
+                        "${"%.1f".format(offer.distanceToPickupKm)} km • ${offer.minutesToPickup} min",
+                        color = Color.White,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 15.sp
+                    )
+                }
+                Column(horizontalAlignment = Alignment.End) {
+                    Text("Passageiro", color = labelColor, fontSize = 13.sp)
+                    Text(
+                        "⭐ ${"%.2f".format(offer.passengerRating)}",
+                        color = Color.White,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 15.sp
+                    )
+                }
+            }
+
+            // ── Motivos (somente se RUIM) ───────────────────────────────────
             if (!evaluation.isGood) {
-                Spacer(Modifier.height(2.dp))
-                evaluation.reasons.take(2).forEach { reason ->
+                Spacer(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(Color.White.copy(alpha = 0.25f))
+                )
+                evaluation.reasons.take(3).forEach { reason ->
                     Text(
                         text = "• $reason",
-                        color = Color.White.copy(alpha = 0.80f),
-                        fontSize = 10.sp,
-                        lineHeight = 13.sp
+                        color = Color.White.copy(alpha = 0.85f),
+                        fontSize = 13.sp,
+                        lineHeight = 17.sp,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }

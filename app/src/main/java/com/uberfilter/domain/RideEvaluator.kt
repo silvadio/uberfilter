@@ -15,6 +15,9 @@ object RideEvaluator {
         if (offer.valuePerKm < criteria.minValuePerKm)
             issues += "R$/km ${"%.2f".format(offer.valuePerKm)} < mínimo ${"%.2f".format(criteria.minValuePerKm)}"
 
+        if (offer.valuePerHour < criteria.minValuePerHour)
+            issues += "R$/hora ${"%.2f".format(offer.valuePerHour)} < mínimo ${"%.2f".format(criteria.minValuePerHour)}"
+
         if (offer.passengerRating < criteria.minPassengerRating)
             issues += "Passageiro ${"%.2f".format(offer.passengerRating)} < mínimo ${"%.2f".format(criteria.minPassengerRating)}"
 

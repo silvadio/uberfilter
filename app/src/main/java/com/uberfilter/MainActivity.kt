@@ -54,6 +54,7 @@ fun MainScreen(vm: SettingsViewModel) {
     // Estados locais para os campos editáveis (string para o TextField)
     var minValue     by remember(criteria) { mutableStateOf(criteria.minTotalValue.toString()) }
     var minPerKm     by remember(criteria) { mutableStateOf(criteria.minValuePerKm.toString()) }
+    var minPerHour   by remember(criteria) { mutableStateOf(criteria.minValuePerHour.toString()) }  // ← NOVO
     var minRating    by remember(criteria) { mutableStateOf(criteria.minPassengerRating.toString()) }
     var maxPickupKm  by remember(criteria) { mutableStateOf(criteria.maxPickupDistanceKm.toString()) }
     var maxPickupMin by remember(criteria) { mutableStateOf(criteria.maxPickupMinutes.toString()) }
@@ -126,6 +127,7 @@ fun MainScreen(vm: SettingsViewModel) {
 
             CriteriaField("Valor mínimo total (R$)", minValue)        { minValue = it }
             CriteriaField("Receita mínima por km (R$/km)", minPerKm)  { minPerKm = it }
+            CriteriaField("Receita mínima por hora (R$/h)", minPerHour) { minPerHour = it }
             CriteriaField("Avaliação mínima do passageiro", minRating){ minRating = it }
             CriteriaField("Distância máxima até passageiro (km)", maxPickupKm) { maxPickupKm = it }
             CriteriaField("Tempo máximo até passageiro (min)", maxPickupMin)   { maxPickupMin = it }
@@ -137,6 +139,7 @@ fun MainScreen(vm: SettingsViewModel) {
                     vm.save(FilterCriteria(
                         minTotalValue       = minValue.toDoubleOrNull()    ?: criteria.minTotalValue,
                         minValuePerKm       = minPerKm.toDoubleOrNull()    ?: criteria.minValuePerKm,
+                        minValuePerHour     = minPerHour.toDoubleOrNull()  ?: criteria.minValuePerHour,
                         minPassengerRating  = minRating.toDoubleOrNull()   ?: criteria.minPassengerRating,
                         maxPickupDistanceKm = maxPickupKm.toDoubleOrNull() ?: criteria.maxPickupDistanceKm,
                         maxPickupMinutes    = maxPickupMin.toIntOrNull()   ?: criteria.maxPickupMinutes,
