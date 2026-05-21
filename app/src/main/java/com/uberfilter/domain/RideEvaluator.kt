@@ -1,41 +1,61 @@
 package com.uberfilter.domain
 
-import com.uberfilter.model.FilterCriteria
-import com.uberfilter.model.RideEvaluation
-import com.uberfilter.model.RideOffer
+import com.uberfilter.model.*
 
 object RideEvaluator {
 
+    private val weights = mapOf(
+        CriteriaKey.TOTAL_VALUE      to 2.5,
+        CriteriaKey.VALUE_PER_HOUR   to 2.5,
+        CriteriaKey.VALUE_PER_KM     to 2.0,
+        CriteriaKey.PASSENGER_RATING to 1.0,
+        CriteriaKey.PICKUP_DISTANCE  to 1.0,
+        CriteriaKey.PICKUP_TIME      to 0.5,
+        CriteriaKey.TRIP_DURATION    to 0.5
+    )
+
     fun evaluate(offer: RideOffer, criteria: FilterCriteria): RideEvaluation {
-        val issues = mutableListOf<String>()
-
-        if (offer.effectiveValue < criteria.minTotalValue)
-            issues += "Valor R${"%.2f".format(offer.effectiveValue)} < mínimo R${"%.2f".format(criteria.minTotalValue)}"
-
-        if (offer.valuePerKm < criteria.minValuePerKm)
-            issues += "R$/km ${"%.2f".format(offer.valuePerKm)} < mínimo ${"%.2f".format(criteria.minValuePerKm)}"
-
-        if (offer.valuePerHour < criteria.minValuePerHour)
-            issues += "R$/hora ${"%.2f".format(offer.valuePerHour)} < mínimo ${"%.2f".format(criteria.minValuePerHour)}"
-
-        if (offer.passengerRating < criteria.minPassengerRating)
-            issues += "Passageiro ${"%.2f".format(offer.passengerRating)} < mínimo ${"%.2f".format(criteria.minPassengerRating)}"
-
-        if (offer.distanceToPickupKm > criteria.maxPickupDistanceKm)
-            issues += "Busca ${"%.1f".format(offer.distanceToPickupKm)} km > máximo ${"%.1f".format(criteria.maxPickupDistanceKm)} km"
-
-        if (offer.minutesToPickup > criteria.maxPickupMinutes)
-            issues += "Busca ${offer.minutesToPickup} min > máximo ${criteria.maxPickupMinutes} min"
-
-        if (offer.tripDistanceKm < criteria.minTripDistanceKm)
-            issues += "Viagem ${"%.1f".format(offer.tripDistanceKm)} km < mínimo ${"%.1f".format(criteria.minTripDistanceKm)} km"
-
-        if (offer.tripDurationMin > criteria.maxTripDurationMin)
-            issues += "Duração ${offer.tripDurationMin} min > máximo ${criteria.maxTripDurationMin} min"
-
-        return RideEvaluation(
-            isGood = issues.isEmpty(),
-            reasons = issues.ifEmpty { listOf("Corrida dentro dos seus critérios ✓") }
+        val results = listOf(
+            CriteriaResult(
+                key    = CriteriaKey.TOTAL_VALUE,
+                passed = offer.effectiveValue >= criteria.minTotalValue
+            ),
+            CriteriaResult(
+                key    = CriteriaKey.VALUE_PER_HOUR,
+                passed = offer.valuePerHour >= criteria.minValuePerHour
+            ),
+            CriteriaResult(
+                key    = CriteriaKey.VALUE_PER_KM,
+                passed = offer.valuePerKm >= criteria.minValuePerKm
+            ),
+            CriteriaResult(
+                key    = CriteriaKey.PASSENGER_RATING,
+                passed = offer.passengerRating >= criteria.minPassengerRating
+            ),
+            CriteriaResult(
+                key    = CriteriaKey.PICKUP_DISTANCE,
+                passed = offer.distanceToPickupKm <= criteria.maxPickupDistanceKm
+            ),
+            CriteriaResult(
+                key    = CriteriaKey.PICKUP_TIME,
+                passed = offer.minutesToPickup <= criteria.maxPickupMinutes
+            ),
+            CriteriaResult(
+                key    = CriteriaKey.TRIP_DURATION,
+                passed = offer.tripDurationMin <= criteria.maxTripDurationMin
+            )
         )
+
+        val score = results
+            .filter { it.passed }
+            .sumOf { weights[it.key] ?: 0.0 }
+
+        val color = when {
+            score > 8.0 -> EvaluationColor.GREEN
+            score > 5.0 -> EvaluationColor.YELLOW
+            else        -> EvaluationColor.RED
+        }
+
+        return RideEvaluation(score = score, color = color, results = results)
     }
 }

@@ -1,42 +1,32 @@
 package com.uberfilter.model
 
-/**
- * Dados extraídos do cartão de convite da Uber.
- */
 data class RideOffer(
-    val totalValue: Double,          // R$ 19,63
-    val bonusValue: Double,          // R$ 3,75 (adicional incluído)
-    val passengerRating: Double,     // 4,94
-    val passengerRatingCount: Int,   // 280
-    val distanceToPickupKm: Double,  // 1,3 km
-    val minutesToPickup: Int,        // 5 min
-    val tripDurationMin: Int,        // 23 min
-    val tripDistanceKm: Double,      // 7,1 km
-    val pickupRegion: String,        // "Região Centro Sul"
-    val destination: String,         // "Rua Fósforo, 22 – BH"
-    val isExclusive: Boolean         // selo "Exclusiva"
+    val totalValue: Double,
+    val bonusValue: Double,
+    val passengerRating: Double,
+    val passengerRatingCount: Int,
+    val distanceToPickupKm: Double,
+    val minutesToPickup: Int,
+    val tripDurationMin: Int,
+    val tripDistanceKm: Double,
+    val pickupRegion: String,
+    val destination: String,
+    val isExclusive: Boolean
 ) {
-    /** Valor total real (corrida + bônus) */
     val effectiveValue: Double get() = totalValue + bonusValue
 
-    /** Receita por km rodado */
     val valuePerKm: Double get() =
         if (tripDistanceKm > 0) effectiveValue / tripDistanceKm else 0.0
 
-    /** Receita por minuto */
     val valuePerMin: Double get() =
         if (tripDurationMin > 0) effectiveValue / tripDurationMin else 0.0
 
-    /** Receita por hora (viagem + tempo de busca do passageiro) */
     val valuePerHour: Double get() {
         val totalMin = tripDurationMin + minutesToPickup
         return if (totalMin > 0) effectiveValue / totalMin * 60.0 else 0.0
     }
 }
 
-/**
- * Critérios configuráveis pelo motorista.
- */
 data class FilterCriteria(
     val minTotalValue: Double = 15.0,
     val minValuePerKm: Double = 2.0,
@@ -48,10 +38,25 @@ data class FilterCriteria(
     val maxTripDurationMin: Int = 40
 )
 
-/**
- * Resultado da avaliação de uma corrida.
- */
+enum class EvaluationColor { RED, YELLOW, GREEN }
+
+enum class CriteriaKey {
+    TOTAL_VALUE,
+    VALUE_PER_HOUR,
+    VALUE_PER_KM,
+    PASSENGER_RATING,
+    PICKUP_DISTANCE,
+    PICKUP_TIME,
+    TRIP_DURATION
+}
+
+data class CriteriaResult(
+    val key: CriteriaKey,
+    val passed: Boolean
+)
+
 data class RideEvaluation(
-    val isGood: Boolean,
-    val reasons: List<String>
+    val score: Double,
+    val color: EvaluationColor,
+    val results: List<CriteriaResult>
 )
