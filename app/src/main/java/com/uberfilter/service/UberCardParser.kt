@@ -9,7 +9,7 @@ import com.uberfilter.model.RideOffer
  * Estratégia: varrer todos os nós e aplicar regex para identificar cada campo.
  * Isso é resiliente a mudanças de layout, pois não depende de IDs de view fixos.
  */
-object UberCardParser {
+object UberCardParser : RideCardParser {
 
     // ── Regex patterns ────────────────────────────────────────────────────────
 
@@ -33,7 +33,7 @@ object UberCardParser {
     /**
      * Retorna um RideOffer se conseguir extrair dados suficientes, null caso contrário.
      */
-    fun parse(root: AccessibilityNodeInfo): RideOffer? {
+    override fun parse(root: AccessibilityNodeInfo): RideOffer? {
         // Coleta todo o texto visível da árvore
         val texts = mutableListOf<String>()
         collectTexts(root, texts)
@@ -76,15 +76,6 @@ object UberCardParser {
 
     // ── Private helpers ───────────────────────────────────────────────────────
 
-    private fun collectTexts(node: AccessibilityNodeInfo?, out: MutableList<String>) {
-        node ?: return
-        val text = node.text?.toString()?.trim()
-        if (!text.isNullOrBlank()) out += text
-        val desc = node.contentDescription?.toString()?.trim()
-        if (!desc.isNullOrBlank() && desc != text) out += desc
-        for (i in 0 until node.childCount) collectTexts(node.getChild(i), out)
-    }
-
     /** Procura por nome de região/bairro (linha após o endereço de embarque) */
     private fun extractRegion(texts: List<String>): String {
         // Heurística: texto que contém "Região" ou está logo após "Rua"/"Av"
@@ -100,7 +91,4 @@ object UberCardParser {
             ?: ""
     }
 
-    /** Converte "19,63" ou "19.63" para Double */
-    private fun String.toDoubleLocale(): Double =
-        this.replace(",", ".").toDoubleOrNull() ?: 0.0
 }

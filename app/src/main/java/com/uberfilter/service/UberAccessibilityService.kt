@@ -26,7 +26,7 @@ class UberAccessibilityService : AccessibilityService() {
     // Último cartão exibido — evita re-exibir o mesmo
     private var lastOfferId: String? = null
 
-    // Flag: cartão da Uber está visível na tela?
+    // Flag: cartão está visível na tela?
     private var cardVisible = false
 
     override fun onServiceConnected() {
@@ -42,7 +42,7 @@ class UberAccessibilityService : AccessibilityService() {
                 AccessibilityServiceInfo.FLAG_INCLUDE_NOT_IMPORTANT_VIEWS or
                         AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
             info.notificationTimeout = 100
-            info.packageNames = arrayOf("com.ubercab.driver")
+            info.packageNames = arrayOf("com.ubercab.driver", "com.app99.driver")
         }
 
         // Carrega critérios uma vez e mantém atualizado em memória
@@ -55,11 +55,11 @@ class UberAccessibilityService : AccessibilityService() {
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         event ?: return
+        val pkg = event.packageName?.toString() ?: ""
 
-        // Se mudou de janela para fora da Uber, esconde popup imediatamente
+        // Se mudou de janela para fora da Uber/99, esconde popup imediatamente
         if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
-            val pkg = event.packageName?.toString() ?: ""
-            if (!pkg.contains("ubercab")) {
+            if (!pkg.contains("ubercab") && !pkg.contains("app99")) {
                 if (cardVisible) {
                     cardVisible = false
                     lastOfferId = null
@@ -89,7 +89,10 @@ class UberAccessibilityService : AccessibilityService() {
             return
         }
 
-        val offer = UberCardParser.parse(root)
+        val rootPkg = root.packageName?.toString() ?: ""
+        val is99 = rootPkg.contains("app99")
+        val parser: RideCardParser = if (is99) N99CardParser else UberCardParser
+        val offer = parser.parse(root)
 
         if (offer == null) {
             // Cartão sumiu da tela
