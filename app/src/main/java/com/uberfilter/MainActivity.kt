@@ -58,7 +58,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         // ── Status bar na cor do header ─────────────────────────────────────
-        window.statusBarColor = android.graphics.Color.parseColor("#FFF9E6")
+        window.statusBarColor = android.graphics.Color.argb(
+            (LightYellowBg.alpha * 255).toInt(),
+            (LightYellowBg.red * 255).toInt(),
+            (LightYellowBg.green * 255).toInt(),
+            (LightYellowBg.blue * 255).toInt()
+        )
         androidx.core.view.WindowInsetsControllerCompat(
             window,
             window.decorView

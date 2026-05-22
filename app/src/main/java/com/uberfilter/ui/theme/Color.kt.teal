@@ -1,0 +1,39 @@
+package com.uberfilter.ui.theme
+
+import androidx.compose.ui.graphics.Color
+
+// ── Família 1: Teal — Destaque, botões, indicadores ativos ─────────────────────
+val WarmYellow        = Color(0xFF00897B)   // Teal 600 – tom encorpado com bom contraste sobre claro
+val WarmYellowDim     = Color(0xFF00695C)   // Teal 800 – estado pressionado / variante
+val WarmYellowGlow    = Color(0x3300897B)   // brilho sutil (alpha baixo)
+val OnWarmYellow      = Color(0xFFFFFFFF)   // texto sobre botões preenchidos (branco)
+
+// ── Família 2: Mint — Containers, superfícies destacadas ──────────────────────
+val LightYellowContainer  = Color(0xFFE0F2F1)   // container primary (Teal 50)
+val OnLightYellowContainer = Color(0xFF004D40)   // texto sobre container (Teal 900)
+val LightYellowSurface    = Color(0xFFB2DFDB)   // verde menta – cards destacados, chips (Teal 100)
+val LightYellowBg         = Color(0xFFE6F2F0)   // menta suave – seções com destaque sutil
+
+// ── Família 3: Neutros Frios — Fundo, texto, bordas ───────────────────────────
+val WarmWhite         = Color(0xFFF5FAF9)   // fundo principal (branco com leve tom teal)
+val PureWhite         = Color(0xFFFFFFFF)   // cards primários
+val WarmOnBg          = Color(0xFF1A1D1C)   // texto principal (quase preto com tom frio)
+val WarmOnSurfaceVariant = Color(0xFF5F6B69) // texto secundário (cinza esverdeado)
+val WarmPlaceholder   = Color(0xFF8F9B99)   // placeholder / hint
+val WarmOutline       = Color(0xFFC8D5D2)   // bordas (cinza menta)
+val WarmOutlineVariant = Color(0xFFDEE7E5)  // bordas sutis / divisores leves
+
+// ── Semânticas ──────────────────────────────────────────────────────────────
+val GreenFinance     = Color(0xFF00897B)   // receita / saldo positivo (teal)
+val RedFinance       = Color(0xFFD32F2F)   // despesa / saldo negativo (mantido)
+val GreenGlow        = Color(0x3300897B)
+val RedGlow          = Color(0x33D32F2F)
+
+// ── Stats / Gamificação ─────────────────────────────────────────────────────
+val RedBad           = Color(0xFFC62828)
+val YellowMedium     = Color(0xFFF9A825)
+val GreenGood        = Color(0xFF00897B)   // teal no lugar do verde oliva
+
+// ── Transparentes para sobreposição ─────────────────────────────────────────
+val BlackAlpha10     = Color(0x1A000000)
+val BlackAlpha20     = Color(0x33000000)

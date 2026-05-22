@@ -1,0 +1,39 @@
+package com.uberfilter.ui.theme
+
+import androidx.compose.ui.graphics.Color
+
+// ── Família 1: Cyan — Destaque, botões, indicadores ativos ─────────────────────
+val WarmYellow        = Color(0xFF0097A7)   // Cyan 700 – tom encorpado com bom contraste sobre claro
+val WarmYellowDim     = Color(0xFF006064)   // Cyan 900 (azul petróleo) – estado pressionado / variante
+val WarmYellowGlow    = Color(0x330097A7)   // brilho sutil (alpha baixo)
+val OnWarmYellow      = Color(0xFFFFFFFF)   // texto sobre botões preenchidos (branco)
+
+// ── Família 2: Light Cyan — Containers, superfícies destacadas ───────────────
+val LightYellowContainer  = Color(0xFFE0F7FA)   // container primary (Cyan 50)
+val OnLightYellowContainer = Color(0xFF006064)   // texto sobre container (Cyan 900 / azul petróleo)
+val LightYellowSurface    = Color(0xFFB2EBF2)   // cyan claro – cards destacados, chips (Cyan 100)
+val LightYellowBg         = Color(0xFFE5F6F8)   // cyan muito suave – seções com destaque sutil
+
+// ── Família 3: Neutros Frios — Fundo, texto, bordas ───────────────────────────
+val WarmWhite         = Color(0xFFF5FAFB)   // fundo principal (branco com leve tom cyan)
+val PureWhite         = Color(0xFFFFFFFF)   // cards primários
+val WarmOnBg          = Color(0xFF1A1F20)   // texto principal (quase preto com tom frio)
+val WarmOnSurfaceVariant = Color(0xFF5F6A6C) // texto secundário (cinza azulado)
+val WarmPlaceholder   = Color(0xFF8F9A9C)   // placeholder / hint
+val WarmOutline       = Color(0xFFC8D4D6)   // bordas (cinza cyan)
+val WarmOutlineVariant = Color(0xFFDEE6E8)  // bordas sutis / divisores leves
+
+// ── Semânticas ──────────────────────────────────────────────────────────────
+val GreenFinance     = Color(0xFF0097A7)   // receita / saldo positivo (cyan)
+val RedFinance       = Color(0xFFD32F2F)   // despesa / saldo negativo (mantido)
+val GreenGlow        = Color(0x330097A7)
+val RedGlow          = Color(0x33D32F2F)
+
+// ── Stats / Gamificação ─────────────────────────────────────────────────────
+val RedBad           = Color(0xFFC62828)
+val YellowMedium     = Color(0xFFF9A825)
+val GreenGood        = Color(0xFF0097A7)   // cyan no lugar do verde
+
+// ── Transparentes para sobreposição ─────────────────────────────────────────
+val BlackAlpha10     = Color(0x1A000000)
+val BlackAlpha20     = Color(0x33000000)
