@@ -3,6 +3,7 @@ package com.uberfilter.service
 import android.content.Context
 import android.graphics.PixelFormat
 import android.os.Build
+import android.provider.Settings
 import android.view.Gravity
 import android.view.WindowManager
 import androidx.compose.foundation.background
@@ -92,12 +93,26 @@ class OverlayManager(private val context: Context) {
 
     private var viewAttached = false
 
-    init {
-        windowManager.addView(composeView, params)
-        viewAttached = true
+    /**
+     * Só anexa a view ao WindowManager no primeiro show(),
+     * e apenas se a permissão SYSTEM_ALERT_WINDOW estiver concedida.
+     * Retorna true se a view está pronta para exibição.
+     */
+    private fun ensureViewAttached(): Boolean {
+        if (viewAttached) return true
+        if (!Settings.canDrawOverlays(context)) return false
+        return try {
+            windowManager.addView(composeView, params)
+            viewAttached = true
+            true
+        } catch (_: Exception) {
+            false
+        }
     }
 
     fun show(offer: RideOffer, evaluation: RideEvaluation) {
+        if (!ensureViewAttached()) return  // permissão ausente → ignora silenciosamente
+
         hideJob?.cancel()
         currentOffer.value      = offer
         currentEvaluation.value = evaluation
@@ -196,6 +211,7 @@ private fun RidePopup(offer: RideOffer, evaluation: RideEvaluation) {
                     alignment = Alignment.End
                 )
             }
+
         }
     }
 }

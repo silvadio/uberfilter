@@ -1,6 +1,7 @@
 package com.uberfilter.data
 
 import android.content.Context
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
@@ -22,6 +23,7 @@ class FilterCriteriaStore(private val context: Context) {
         val MAX_PICKUP_MINUTES   = intPreferencesKey("max_pickup_minutes")
         val MIN_TRIP_DIST_KM     = doublePreferencesKey("min_trip_dist_km")
         val MAX_TRIP_DURATION    = intPreferencesKey("max_trip_duration")
+        val ASSISTANT_ENABLED    = booleanPreferencesKey("assistant_enabled")
     }
 
     val criteriaFlow: Flow<FilterCriteria> = context.dataStore.data.map { prefs ->
@@ -36,6 +38,16 @@ class FilterCriteriaStore(private val context: Context) {
             minTripDistanceKm   = prefs[MIN_TRIP_DIST_KM]     ?: defaults.minTripDistanceKm,
             maxTripDurationMin  = prefs[MAX_TRIP_DURATION]    ?: defaults.maxTripDurationMin
         )
+    }
+
+    val assistantEnabledFlow: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[ASSISTANT_ENABLED] ?: true // habilitado por padrão
+    }
+
+    suspend fun setAssistantEnabled(enabled: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[ASSISTANT_ENABLED] = enabled
+        }
     }
 
     suspend fun save(criteria: FilterCriteria) {

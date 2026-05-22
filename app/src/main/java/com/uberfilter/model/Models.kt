@@ -1,5 +1,8 @@
 package com.uberfilter.model
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
 data class RideOffer(
     val totalValue: Double,
     val bonusValue: Double,
@@ -59,4 +62,38 @@ data class RideEvaluation(
     val score: Double,
     val color: EvaluationColor,
     val results: List<CriteriaResult>
+)
+
+// ── Histórico de corridas avaliadas ────────────────────────────────────────────
+
+@Entity(tableName = "ride_history")
+data class RideRecord(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
+    val offerId: String,               // chave de deduplicação (valor|distância)
+    val totalValue: Double,
+    val bonusValue: Double,
+    val passengerRating: Double,
+    val passengerRatingCount: Int,
+    val distanceToPickupKm: Double,
+    val minutesToPickup: Int,
+    val tripDurationMin: Int,
+    val tripDistanceKm: Double,
+    val pickupRegion: String,
+    val destination: String,
+    val isExclusive: Boolean,
+    val score: Double,                 // score do RideEvaluator
+    val color: EvaluationColor,        // RED / YELLOW / GREEN
+    val timestamp: Long = System.currentTimeMillis()
+)
+
+// ── Estatísticas da Home ───────────────────────────────────────────────────────
+
+data class RideStats(
+    val redCount: Int,
+    val yellowCount: Int,
+    val greenCount: Int,
+    val redPct: Int,
+    val yellowPct: Int,
+    val greenPct: Int
 )

@@ -41,6 +41,26 @@ Open the project in **Android Studio Hedgehog (2023.1.1) or newer**. Sync Gradle
 - **Models**: Prefer `data class` with named parameters for DTOs.
 - **Formatting**: Rely on Android Studio's built-in Kotlin formatter (Ctrl+Alt+L / Cmd+Opt+L). No additional lint tool is configured yet — keep code consistent with existing files.
 
+## UI Icon Policy
+
+- **Mandatory**: All icons MUST come from `androidx.compose.material:material-icons-extended` (`Icons.Outlined.*` or `Icons.Filled.*`).
+- **Forbidden**: Emojis (e.g., `"🏆"`, `"🎯"`) in UI components — use named Material icon constants instead.
+- **Common mappings used in this project**:
+
+| Purpose | Icon |
+|---|---|
+| Goal achieved | `Icons.Outlined.EmojiEvents` |
+| Set target / goal | `Icons.Outlined.TrackChanges` |
+| Finance / wallet | `Icons.Outlined.AccountBalanceWallet` |
+| Home tab | `Icons.Outlined.Home` |
+| Filters tab | `Icons.Outlined.Tune` |
+| Back navigation | `Icons.Filled.ArrowBack` |
+| Delete action | `Icons.Outlined.Delete` |
+| Save action | `Icons.Filled.Save` |
+| Add / FAB | `Icons.Filled.Add` |
+| Success / granted | `Icons.Outlined.CheckCircle` |
+| Warning | `Icons.Outlined.Warning` |
+
 ## Testing Guidelines
 
 - **Framework**: JUnit (unit tests), Espresso/Compose testing (instrumented).

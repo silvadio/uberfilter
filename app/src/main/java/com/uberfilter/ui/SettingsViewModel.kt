@@ -19,7 +19,17 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
         initialValue = FilterCriteria()
     )
 
+    val assistantEnabled = store.assistantEnabledFlow.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = true
+    )
+
     fun save(criteria: FilterCriteria) {
         viewModelScope.launch { store.save(criteria) }
+    }
+
+    fun setAssistantEnabled(enabled: Boolean) {
+        viewModelScope.launch { store.setAssistantEnabled(enabled) }
     }
 }
