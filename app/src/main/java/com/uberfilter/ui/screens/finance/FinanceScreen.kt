@@ -77,7 +77,7 @@ fun FinanceScreen(
                     Text(
                         text = "Metas  →",
                         color = WarmYellow,
-                        fontSize = 13.sp,
+                        fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold
                     )
                 }
@@ -85,7 +85,7 @@ fun FinanceScreen(
                     Text(
                         text = "Transações  →",
                         color = WarmYellow,
-                        fontSize = 13.sp,
+                        fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold
                     )
                 }
@@ -122,7 +122,7 @@ fun FinanceScreen(
                 Text(
                     text = "TRANSAÇÕES DO DIA",
                     color = WarmOnSurfaceVariant,
-                    fontSize = 11.sp,
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.ExtraBold,
                     letterSpacing = 0.8.sp
                 )

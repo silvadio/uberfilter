@@ -35,7 +35,7 @@ fun PeriodSelector(
                 label = {
                     Text(
                         text = filter.label,
-                        fontSize = 13.sp,
+                        fontSize = 14.sp,
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                     )
                 },

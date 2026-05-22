@@ -50,14 +50,14 @@ fun SummaryCard(
                         label = {
                             Text(
                                 text = filter.label,
-                                fontSize = 11.sp,
+                                fontSize = 14.sp,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                             )
                         },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = WarmYellow,
                             selectedLabelColor = OnWarmYellow,
-                            containerColor = LightYellowBg,
+                            containerColor = PureWhite,
                             labelColor = WarmOnSurfaceVariant
                         )
                     )
