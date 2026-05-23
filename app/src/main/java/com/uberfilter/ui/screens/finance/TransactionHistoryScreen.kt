@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.outlined.ReceiptLong
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -138,7 +139,12 @@ fun TransactionHistoryScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "📋", fontSize = 40.sp)
+                    Icon(
+                        imageVector = Icons.Outlined.ReceiptLong,
+                        contentDescription = null,
+                        tint = WarmPlaceholder,
+                        modifier = Modifier.size(40.dp)
+                    )
                     Spacer(Modifier.height(12.dp))
                     Text(
                         text = "Nenhuma transação encontrada",
