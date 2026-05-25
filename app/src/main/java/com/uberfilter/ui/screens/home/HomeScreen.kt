@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.uberfilter.ui.FinanceViewModel
 import com.uberfilter.ui.HomeViewModel
+import com.uberfilter.ui.LoginViewModel
 import com.uberfilter.ui.SettingsViewModel
 import com.uberfilter.ui.components.GoalCard
 import com.uberfilter.ui.components.GoalDialog
@@ -25,13 +26,20 @@ import com.uberfilter.ui.components.PremiumHeader
 import com.uberfilter.ui.theme.*
 
 @Composable
-fun HomeScreen(vm: HomeViewModel, financeVm: FinanceViewModel, settingsVm: SettingsViewModel) {
+fun HomeScreen(vm: HomeViewModel, financeVm: FinanceViewModel, settingsVm: SettingsViewModel, loginVm: LoginViewModel, onLogout: () -> Unit = {}) {
     val uiState by vm.uiState.collectAsState()
     val selectedPeriod by vm.selectedPeriod.collectAsState()
     val goal by financeVm.goal.collectAsState()
     val goalProgress by financeVm.goalProgress.collectAsState()
     val assistantEnabled by settingsVm.assistantEnabled.collectAsState()
     val weeklyBalance by financeVm.weeklyBalance.collectAsState()
+
+    val userName by loginVm.loggedName.collectAsState()
+    val greeting = userName?.split(" ")?.firstOrNull() ?: "Motorista"
+    val initials = userName?.split(" ")
+        ?.filter { it.isNotBlank() }
+        ?.take(2)
+        ?.joinToString("") { it.first().uppercase() } ?: ""
 
     var showGoalDialog by remember { mutableStateOf(false) }
 
@@ -48,10 +56,11 @@ fun HomeScreen(vm: HomeViewModel, financeVm: FinanceViewModel, settingsVm: Setti
         modifier = Modifier.fillMaxSize()
     ) {
         PremiumHeader(
-            greetingName = "Morris",
+            greetingName = greeting,
             subtitle = "Bem-vindo ao DriverIQ",
-            avatarInitials = "MO",
+            avatarInitials = initials,
             onSettingsClick = { /* TODO: navegar para configurações */ },
+            onLogoutClick = onLogout,
             onAvatarClick = { /* TODO: navegar para perfil */ }
         )
 

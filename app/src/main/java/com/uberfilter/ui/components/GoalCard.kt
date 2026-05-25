@@ -246,15 +246,24 @@ fun GoalCard(
 // ── Helper: dias restantes no período da meta ────────────────────────────────
 
 private fun daysRemainingLabel(type: GoalType): String {
-    val cal = Calendar.getInstance()
+    val now = Calendar.getInstance()
     val remaining = when (type) {
         GoalType.WEEKLY -> {
-            val dayOfWeek = cal.get(Calendar.DAY_OF_WEEK)        // 1=Dom .. 7=Sáb
-            if (dayOfWeek == Calendar.SUNDAY) 1 else Calendar.SATURDAY - dayOfWeek + 2
+            // Próxima segunda-feira 04:00 (fim da semana Uber)
+            val nextMon = Calendar.getInstance().apply {
+                set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
+                set(Calendar.HOUR_OF_DAY, 4)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+            if (!now.before(nextMon)) nextMon.add(Calendar.DAY_OF_YEAR, 7)
+            val diffMs = nextMon.timeInMillis - now.timeInMillis
+            ((diffMs + 86_399_999) / 86_400_000).toInt().coerceAtLeast(1)
         }
         GoalType.MONTHLY -> {
-            val today = cal.get(Calendar.DAY_OF_MONTH)
-            val lastDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
+            val today = now.get(Calendar.DAY_OF_MONTH)
+            val lastDay = now.getActualMaximum(Calendar.DAY_OF_MONTH)
             lastDay - today + 1
         }
     }

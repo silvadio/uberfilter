@@ -7,10 +7,11 @@ import androidx.room.RoomDatabase
 import com.uberfilter.model.GoalHistoryEntry
 import com.uberfilter.model.RideRecord
 import com.uberfilter.model.Transaction
+import com.uberfilter.model.User
 
 @Database(
-    entities = [Transaction::class, RideRecord::class, GoalHistoryEntry::class],
-    version = 3,
+    entities = [Transaction::class, RideRecord::class, GoalHistoryEntry::class, User::class],
+    version = 4,
     exportSchema = false
 )
 abstract class FinanceDatabase : RoomDatabase() {
@@ -18,6 +19,7 @@ abstract class FinanceDatabase : RoomDatabase() {
     abstract fun transactionDao(): TransactionDao
     abstract fun rideHistoryDao(): RideHistoryDao
     abstract fun goalHistoryDao(): GoalHistoryDao
+    abstract fun userDao(): UserDao
 
     companion object {
         @Volatile

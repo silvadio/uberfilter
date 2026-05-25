@@ -83,12 +83,23 @@ object FinanceCalculator {
             }
 
             PeriodFilter.THIS_WEEK -> {
-                val start = Calendar.getInstance().apply {
-                    set(Calendar.DAY_OF_WEEK, firstDayOfWeek)
-                    startOfDay(this)
+                val now = Calendar.getInstance()
+                // Segunda-feira da semana atual às 04:00
+                val mon = Calendar.getInstance().apply {
+                    set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
+                    set(Calendar.HOUR_OF_DAY, 4)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
                 }
-                val end = Calendar.getInstance().apply { endOfDay(this) }
-                DateRange(start.timeInMillis, end.timeInMillis)
+                // Se ainda não chegou na segunda 04:00, usa a semana passada
+                if (now.before(mon)) {
+                    mon.add(Calendar.DAY_OF_YEAR, -7)
+                }
+                val end = mon.clone() as Calendar
+                end.add(Calendar.DAY_OF_YEAR, 7)
+                end.add(Calendar.MILLISECOND, -1)
+                DateRange(mon.timeInMillis, end.timeInMillis)
             }
 
             PeriodFilter.THIS_MONTH -> {

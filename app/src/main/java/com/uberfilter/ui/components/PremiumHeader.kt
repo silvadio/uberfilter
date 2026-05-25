@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.*
@@ -32,6 +33,7 @@ fun PremiumHeader(
     avatarPainter: Painter? = null,
     avatarInitials: String = "",
     onSettingsClick: () -> Unit = {},
+    onLogoutClick: () -> Unit = {},
     onAvatarClick: () -> Unit = {}
 ) {
     Box(
@@ -82,7 +84,7 @@ fun PremiumHeader(
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     Text(
-                        text = "Hi! $greetingName",
+                        text = "Olá, $greetingName",
                         color = WarmOnBg,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
@@ -101,20 +103,38 @@ fun PremiumHeader(
                 }
             }
 
-            // ── Lado Direito: Botão Settings ─────────────────────────────────
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .clickable(onClick = onSettingsClick),
-                contentAlignment = Alignment.Center
+            // ── Lado Direito: Settings + Logout ─────────────────────────────
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Outlined.Settings,
-                    contentDescription = "Configurações",
-                    tint = WarmOnBg,
-                    modifier = Modifier.size(22.dp)
-                )
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .clickable(onClick = onSettingsClick),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Settings,
+                        contentDescription = "Configurações",
+                        tint = WarmOnBg,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .clickable(onClick = onLogoutClick),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Logout,
+                        contentDescription = "Sair",
+                        tint = WarmOnBg,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
             }
         }
     }
@@ -164,7 +184,8 @@ fun PremiumHeaderCompact(
     greetingName: String,
     subtitle: String,
     modifier: Modifier = Modifier,
-    onSettingsClick: () -> Unit = {}
+    onSettingsClick: () -> Unit = {},
+    onLogoutClick: () -> Unit = {}
 ) {
     Box(
         modifier = modifier
@@ -180,7 +201,7 @@ fun PremiumHeaderCompact(
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
-                    text = "Hi! $greetingName",
+                    text = "Olá, $greetingName",
                     color = WarmOnBg,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
@@ -197,19 +218,37 @@ fun PremiumHeaderCompact(
                 )
             }
 
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .clickable(onClick = onSettingsClick),
-                contentAlignment = Alignment.Center
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Outlined.Settings,
-                    contentDescription = "Configurações",
-                    tint = WarmOnBg,
-                    modifier = Modifier.size(20.dp)
-                )
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .clickable(onClick = onSettingsClick),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Settings,
+                        contentDescription = "Configurações",
+                        tint = WarmOnBg,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .clickable(onClick = onLogoutClick),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Logout,
+                        contentDescription = "Sair",
+                        tint = WarmOnBg,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
         }
     }

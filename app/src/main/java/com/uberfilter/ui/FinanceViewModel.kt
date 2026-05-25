@@ -232,16 +232,24 @@ class FinanceViewModel(app: Application) : AndroidViewModel(app) {
     // ── Helpers de período ───────────────────────────────────────────────────
 
     companion object {
-        /** "2025-W21" ou "2025-05" — período ANTERIOR ao atual */
+        /** "2026-05-19" (segunda-feira) ou "2026-04" — período ANTERIOR ao atual */
         fun previousPeriodKey(type: GoalType): String {
             val cal = Calendar.getInstance()
             return when (type) {
                 GoalType.WEEKLY -> {
-                    cal.add(Calendar.WEEK_OF_YEAR, -1)
-                    val weekYear = cal.get(Calendar.YEAR)
-                    val weekNum  = cal.get(Calendar.WEEK_OF_YEAR)
-                    // Ajuste: se weekNum=1 e mês=Dez, o ano ISO pode ser o seguinte
-                    "$weekYear-W${weekNum.toString().padStart(2, '0')}"
+                    // Volta 7 dias a partir da segunda-feira 04:00 atual
+                    cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
+                    cal.set(Calendar.HOUR_OF_DAY, 4)
+                    cal.set(Calendar.MINUTE, 0)
+                    cal.set(Calendar.SECOND, 0)
+                    cal.set(Calendar.MILLISECOND, 0)
+                    val now = Calendar.getInstance()
+                    if (now.before(cal)) cal.add(Calendar.DAY_OF_YEAR, -7)
+                    cal.add(Calendar.DAY_OF_YEAR, -7) // semana anterior
+                    val year  = cal.get(Calendar.YEAR)
+                    val month = (cal.get(Calendar.MONTH) + 1).toString().padStart(2, '0')
+                    val day   = cal.get(Calendar.DAY_OF_MONTH).toString().padStart(2, '0')
+                    "$year-$month-$day"
                 }
                 GoalType.MONTHLY -> {
                     cal.add(Calendar.MONTH, -1)
@@ -253,26 +261,28 @@ class FinanceViewModel(app: Application) : AndroidViewModel(app) {
         }
 
         fun previousPeriodRange(type: GoalType): DateRange {
-            val cal = Calendar.getInstance()
+            val now = Calendar.getInstance()
             return when (type) {
                 GoalType.WEEKLY -> {
-                    // Volta para a semana passada
-                    cal.add(Calendar.WEEK_OF_YEAR, -1)
-                    cal.set(Calendar.DAY_OF_WEEK, cal.firstDayOfWeek)
-                    cal.set(Calendar.HOUR_OF_DAY, 0)
-                    cal.set(Calendar.MINUTE, 0)
-                    cal.set(Calendar.SECOND, 0)
-                    cal.set(Calendar.MILLISECOND, 0)
-                    val start = cal.timeInMillis
-                    cal.add(Calendar.DAY_OF_YEAR, 6)
-                    cal.set(Calendar.HOUR_OF_DAY, 23)
-                    cal.set(Calendar.MINUTE, 59)
-                    cal.set(Calendar.SECOND, 59)
-                    cal.set(Calendar.MILLISECOND, 999)
-                    val end = cal.timeInMillis
-                    DateRange(start, end)
+                    // Segunda-feira 04:00 da semana atual
+                    val weekStart = Calendar.getInstance().apply {
+                        set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
+                        set(Calendar.HOUR_OF_DAY, 4)
+                        set(Calendar.MINUTE, 0)
+                        set(Calendar.SECOND, 0)
+                        set(Calendar.MILLISECOND, 0)
+                    }
+                    if (now.before(weekStart)) weekStart.add(Calendar.DAY_OF_YEAR, -7)
+                    // Volta mais 7 dias para a semana anterior
+                    weekStart.add(Calendar.DAY_OF_YEAR, -7)
+                    val start = weekStart.timeInMillis
+                    val end = weekStart.clone() as Calendar
+                    end.add(Calendar.DAY_OF_YEAR, 7)
+                    end.add(Calendar.MILLISECOND, -1)
+                    DateRange(start, end.timeInMillis)
                 }
                 GoalType.MONTHLY -> {
+                    val cal = Calendar.getInstance()
                     cal.set(Calendar.DAY_OF_MONTH, 1)
                     cal.add(Calendar.MONTH, -1)
                     cal.set(Calendar.HOUR_OF_DAY, 0)

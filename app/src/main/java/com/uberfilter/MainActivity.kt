@@ -7,6 +7,7 @@ import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -44,7 +45,10 @@ import com.uberfilter.model.FilterCriteria
 import com.uberfilter.service.AppForegroundService
 import com.uberfilter.ui.FinanceViewModel
 import com.uberfilter.ui.HomeViewModel
+import com.uberfilter.ui.LoginViewModel
 import com.uberfilter.ui.SettingsViewModel
+import com.uberfilter.ui.screens.auth.LoginScreen
+import com.uberfilter.ui.screens.auth.RegisterScreen
 import com.uberfilter.ui.screens.finance.AddTransactionScreen
 import com.uberfilter.ui.screens.finance.FinanceScreen
 import com.uberfilter.ui.screens.finance.GoalHistoryScreen
@@ -77,10 +81,27 @@ class MainActivity : ComponentActivity() {
             UberFilterTheme {
                 val financeVm: FinanceViewModel = viewModel()
                 val homeVm: HomeViewModel = viewModel()
+                val loginVm: LoginViewModel = viewModel()
                 val navController = rememberNavController()
 
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentRoute = navBackStackEntry?.destination?.route
+                val isLoggedIn by loginVm.isLoggedIn.collectAsState()
+                var authChecked by remember { mutableStateOf(false) }
+
+                LaunchedEffect(isLoggedIn) { authChecked = true }
+
+                if (!authChecked) {
+                    // Splash silencioso enquanto verifica sessão
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(WarmWhite),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = WarmYellow, strokeWidth = 3.dp)
+                    }
+                } else {
+                    val navBackStackEntry by navController.currentBackStackEntryAsState()
+                    val currentRoute = navBackStackEntry?.destination?.route
 
                 val showFab = currentRoute == "finance"
                 val showBottomBar = currentRoute in listOf("home", "filters", "finance")
@@ -149,11 +170,46 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "home",
+                        startDestination = if (isLoggedIn) "home" else "login",
                         modifier = Modifier.padding(innerPadding)
                     ) {
+                        composable("login") {
+                            LoginScreen(
+                                vm = loginVm,
+                                onLoggedIn = {
+                                    navController.navigate("home") {
+                                        popUpTo("login") { inclusive = true }
+                                    }
+                                },
+                                onNavigateToRegister = {
+                                    navController.navigate("register")
+                                }
+                            )
+                        }
+                        composable("register") {
+                            RegisterScreen(
+                                vm = loginVm,
+                                onRegistered = {
+                                    navController.navigate("home") {
+                                        popUpTo("login") { inclusive = true }
+                                    }
+                                },
+                                onBack = { navController.popBackStack() }
+                            )
+                        }
                         composable("home") {
-                            HomeScreen(vm = homeVm, financeVm = financeVm, settingsVm = settingsVm)
+                            HomeScreen(
+                                vm = homeVm,
+                                financeVm = financeVm,
+                                settingsVm = settingsVm,
+                                loginVm = loginVm,
+                                onLogout = {
+                                    loginVm.logout()
+                                    navController.navigate("login") {
+                                        popUpTo("home") { inclusive = true }
+                                    }
+                                }
+                            )
                         }
                         composable("filters") {
                             FiltersScreen(settingsVm)
@@ -186,6 +242,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+        }
         }
     }
 }
