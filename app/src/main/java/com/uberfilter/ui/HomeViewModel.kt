@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 
 data class HomeUiState(
     val stats: RideStats? = null,
-    val selectedPeriod: PeriodFilter = PeriodFilter.TODAY,
+    val selectedPeriod: PeriodFilter = PeriodFilter.THIS_MONTH,
     val isLoading: Boolean = true
 )
 
@@ -25,7 +25,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
         FinanceDatabase.getInstance(app).rideHistoryDao()
     )
 
-    private val _period = MutableStateFlow(PeriodFilter.TODAY)
+    private val _period = MutableStateFlow(PeriodFilter.THIS_MONTH)
     val selectedPeriod: StateFlow<PeriodFilter> = _period.asStateFlow()
 
     @OptIn(ExperimentalCoroutinesApi::class)

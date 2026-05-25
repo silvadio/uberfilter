@@ -31,7 +31,7 @@ class FinanceViewModel(app: Application) : AndroidViewModel(app) {
 
     // ── Período selecionado (filtro do ecrã) ──────────────────────────────────
 
-    private val _period = MutableStateFlow(PeriodFilter.TODAY)
+    private val _period = MutableStateFlow(PeriodFilter.THIS_MONTH)
     val selectedPeriod: StateFlow<PeriodFilter> = _period.asStateFlow()
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -182,7 +182,7 @@ class FinanceViewModel(app: Application) : AndroidViewModel(app) {
 
     // ── Histórico de transações ────────────────────────────────────────────
 
-    private val _transactionPeriod = MutableStateFlow(PeriodFilter.TODAY)
+    private val _transactionPeriod = MutableStateFlow(PeriodFilter.THIS_MONTH)
     val selectedTransactionPeriod: StateFlow<PeriodFilter> = _transactionPeriod.asStateFlow()
 
     @OptIn(ExperimentalCoroutinesApi::class)
