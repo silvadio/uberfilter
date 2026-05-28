@@ -39,6 +39,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -998,6 +999,7 @@ private fun OsmMapView(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val currentOnCenterChanged by rememberUpdatedState(onCenterChanged)
 
     AndroidView(
         factory = { ctx ->
@@ -1006,15 +1008,36 @@ private fun OsmMapView(
                 osmdroidTileCache = ctx.cacheDir
             }
             org.osmdroid.views.MapView(ctx).apply {
+                clipChildren = true
                 setTileSource(org.osmdroid.tileprovider.tilesource.TileSourceFactory.MAPNIK)
                 setMultiTouchControls(true)
+
+                // Botões de zoom visíveis
+                zoomController.setVisibility(
+                    org.osmdroid.views.CustomZoomButtonsController.Visibility.ALWAYS
+                )
+
+                // Zoom inicial (executado uma única vez)
+                val initialCenter = org.osmdroid.util.GeoPoint(center.first, center.second)
+                controller.setCenter(initialCenter)
+                controller.setZoom(15.0)
+
+                // Listener de scroll — registrado uma única vez
+                addMapListener(object : org.osmdroid.events.MapListener {
+                    override fun onScroll(event: org.osmdroid.events.ScrollEvent?): Boolean {
+                        event ?: return false
+                        val newCenter = mapCenter
+                        currentOnCenterChanged(newCenter.latitude, newCenter.longitude)
+                        return false
+                    }
+                    override fun onZoom(event: org.osmdroid.events.ZoomEvent?): Boolean = false
+                })
             }
         },
-        modifier = modifier,
+        modifier = modifier.clipToBounds(),
         update = { mapView ->
             val mapCenter = org.osmdroid.util.GeoPoint(center.first, center.second)
             mapView.controller.setCenter(mapCenter)
-            mapView.controller.setZoom(15.0)
 
             // Atualiza overlay: círculo + marcador central
             mapView.overlays.clear()
@@ -1023,7 +1046,7 @@ private fun OsmMapView(
             val circle = org.osmdroid.views.overlay.Polygon()
             circle.points = org.osmdroid.views.overlay.Polygon.pointsAsCircle(mapCenter, radiusKm * 1000.0)
             circle.fillPaint.apply {
-                color = android.graphics.Color.argb(40, 249, 168, 37) // WarmYellow translúcido
+                color = android.graphics.Color.argb(40, 249, 168, 37)
                 style = android.graphics.Paint.Style.FILL
             }
             circle.outlinePaint.apply {
@@ -1039,17 +1062,6 @@ private fun OsmMapView(
             marker.setAnchor(org.osmdroid.views.overlay.Marker.ANCHOR_CENTER, org.osmdroid.views.overlay.Marker.ANCHOR_BOTTOM)
             marker.title = "Centro"
             mapView.overlays.add(marker)
-
-            // Listener para detectar quando o usuário moveu o mapa
-            mapView.addMapListener(object : org.osmdroid.events.MapListener {
-                override fun onScroll(event: org.osmdroid.events.ScrollEvent?): Boolean {
-                    event ?: return false
-                    val newCenter = mapView.mapCenter
-                    onCenterChanged(newCenter.latitude, newCenter.longitude)
-                    return false
-                }
-                override fun onZoom(event: org.osmdroid.events.ZoomEvent?): Boolean = false
-            })
 
             mapView.invalidate()
         }
