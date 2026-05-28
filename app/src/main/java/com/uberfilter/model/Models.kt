@@ -41,7 +41,7 @@ data class FilterCriteria(
     val maxTripDurationMin: Int = 40
 )
 
-enum class EvaluationColor { RED, YELLOW, GREEN }
+enum class EvaluationColor { RED, YELLOW, GREEN, BLOCKED }
 
 enum class CriteriaKey {
     TOTAL_VALUE,
@@ -61,7 +61,25 @@ data class CriteriaResult(
 data class RideEvaluation(
     val score: Double,
     val color: EvaluationColor,
-    val results: List<CriteriaResult>
+    val results: List<CriteriaResult>,
+    val blockedLocation: String? = null,   // termo que bateu na lista de locais indesejados
+    val blockedType: BlockedType? = null    // TEXT ou GEOFENCE
+)
+
+/** Resultado do matching de local indesejado contra o destino da corrida */
+data class MatchResult(
+    val term: String       // termo da lista que bateu (ex: "Flores")
+)
+
+/** Tipo de bloqueio que disparou o alerta */
+enum class BlockedType { TEXT, GEOFENCE }
+
+/** Região bloqueada por raio geográfico */
+data class GeofenceEntry(
+    val centerLat: Double,
+    val centerLng: Double,
+    val radiusKm: Double,
+    val addressLabel: String   // "Rua Cap. João Manoel, Porto Novo - SG/RJ"
 )
 
 // ── Histórico de corridas avaliadas ────────────────────────────────────────────

@@ -69,6 +69,12 @@ dependencies {
     // Navigation Compose
     implementation("androidx.navigation:navigation-compose:2.8.3")
 
+    // osmdroid — mapa gratuito (OpenStreetMap)
+    implementation("org.osmdroid:osmdroid-android:6.1.20")
+
+    // Gson — serialização de geofences
+    implementation("com.google.code.gson:gson:2.10.1")
+
     // Debug
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)

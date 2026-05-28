@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Icon
+import androidx.compose.material.icons.outlined.GpsOff
 import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -67,7 +68,15 @@ class OverlayManager(private val context: Context) {
             val visible    by isVisible
 
             if (visible && offer != null && evaluation != null) {
-                RidePopup(offer = offer!!, evaluation = evaluation!!)
+                if (evaluation!!.color == EvaluationColor.BLOCKED) {
+                    BlockedDestinationPopup(
+                        destination = offer!!.destination.ifBlank { "(destino não identificado)" },
+                        blockedTerm = evaluation!!.blockedLocation ?: "?",
+                        isGeofence = evaluation!!.blockedType == com.uberfilter.model.BlockedType.GEOFENCE
+                    )
+                } else {
+                    RidePopup(offer = offer!!, evaluation = evaluation!!)
+                }
             }
         }
     }
@@ -118,8 +127,9 @@ class OverlayManager(private val context: Context) {
         currentEvaluation.value = evaluation
         isVisible.value         = true
 
+        val duration = if (evaluation.color == EvaluationColor.BLOCKED) 8_000L else 6_000L
         hideJob = scope.launch {
-            delay(6_000L)
+            delay(duration)
             dismiss()
         }
     }
@@ -142,9 +152,10 @@ class OverlayManager(private val context: Context) {
 // ── Cores ──────────────────────────────────────────────────────────────────────
 
 private fun evaluationBgColor(color: EvaluationColor) = when (color) {
-    EvaluationColor.GREEN  -> Color(0xFF1B8C3E)
-    EvaluationColor.YELLOW -> Color(0xFFF9A825)
-    EvaluationColor.RED    -> Color(0xFFB71C1C)
+    EvaluationColor.GREEN   -> Color(0xFF1B8C3E)
+    EvaluationColor.YELLOW  -> Color(0xFFF9A825)
+    EvaluationColor.RED     -> Color(0xFFB71C1C)
+    EvaluationColor.BLOCKED -> Color(0xFF311B92)  // roxo escuro — local indesejado
 }
 
 // ── Popup ──────────────────────────────────────────────────────────────────────
@@ -284,6 +295,68 @@ private fun FooterItem(
                 color = Color.White,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+// ── Popup de Local Bloqueado ──────────────────────────────────────────────────
+
+/**
+ * Popup exibido quando o destino da corrida contém um local indesejado.
+ * Layout: ícone + título + endereço + "contém: termo".
+ * Fundo roxo escuro — totalmente distinto das cores financeiras.
+ */
+@Composable
+private fun BlockedDestinationPopup(
+    destination: String,
+    blockedTerm: String,
+    isGeofence: Boolean = false
+) {
+    Box(
+        modifier = Modifier
+            .width(300.dp)
+            .background(Color(0xFF311B92), RoundedCornerShape(14.dp))
+            .padding(horizontal = 20.dp, vertical = 16.dp)
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Título com ícone
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.GpsOff,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(28.dp)
+                )
+                Text(
+                    text = if (isGeofence) "LOCAL INDESEJADO (região)"
+                           else "LOCAL INDESEJADO",
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            // Endereço de destino
+            Text(
+                text = destination,
+                color = Color.White.copy(alpha = 0.85f),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Normal
+            )
+
+            // Termo que disparou o alerta
+            Text(
+                text = if (isGeofence) "dentro do raio de: \"$blockedTerm\""
+                       else "contém: \"$blockedTerm\"",
+                color = Color.White.copy(alpha = 0.65f),
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Normal
             )
         }
     }

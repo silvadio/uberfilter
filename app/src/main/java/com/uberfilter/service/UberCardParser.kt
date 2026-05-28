@@ -84,11 +84,82 @@ object UberCardParser : RideCardParser {
             ?: ""
     }
 
-    /** Procura pelo destino final (CEP ou padrão de endereço completo com MG/SP/RJ) */
+    /**
+     * Extrai o endereço completo de destino.
+     *
+     * Estratégia: localiza o bloco de textos que compõem o endereço de destino
+     * (identificado por CEP ou padrão "Cidade – UF") e concatena os fragmentos
+     * adjacentes para montar a string mais completa possível.
+     */
     private fun extractDestination(texts: List<String>): String {
-        return texts.firstOrNull { it.matches(Regex(".*\\d{5}-\\d{3}.*")) }
-            ?: texts.lastOrNull { it.contains(" – ") || it.contains(" - ") }
-            ?: ""
+        // 1. Busca índice do texto âncora (CEP ou "Cidade – UF")
+        val anchorIdx = texts.indexOfFirst { it.matches(Regex(".*\\d{5}-\\d{3}.*")) }
+            .takeIf { it >= 0 }
+            ?: texts.indexOfLast { it.contains(" – ") || it.contains(" - ") }
+                .takeIf { it >= 0 }
+
+        if (anchorIdx == null) return ""
+
+        val parts = mutableListOf<String>()
+
+        // 2. Inclui textos anteriores que pareçam parte do endereço
+        //    (ex: "Rua das Flores, 22" antes do CEP)
+        var i = anchorIdx - 1
+        while (i >= 0) {
+            val t = texts[i]
+            if (looksLikeAddressFragment(t) && !looksLikeMetric(t)) {
+                parts.add(0, t)
+                i--
+            } else {
+                break
+            }
+        }
+
+        // 3. Texto âncora
+        parts.add(texts[anchorIdx])
+
+        // 4. Textos posteriores (ex: "Uberlândia – MG" depois do CEP)
+        i = anchorIdx + 1
+        while (i < texts.size) {
+            val t = texts[i]
+            if (looksLikeAddressFragment(t) && !looksLikeMetric(t)) {
+                parts.add(t)
+                i++
+            } else {
+                break
+            }
+        }
+
+        return parts.joinToString(", ")
+    }
+
+    /** Heurística: texto que parece fazer parte de um endereço */
+    private fun looksLikeAddressFragment(text: String): Boolean {
+        val t = text.trim()
+        if (t.isBlank()) return false
+
+        // Contém nome de logradouro, bairro, cidade, número, ou "–"
+        return t.any { it.isLetter() } && (
+            t.contains("Rua ", ignoreCase = true) ||
+            t.contains("Av ", ignoreCase = true) ||
+            t.contains("Avenida ", ignoreCase = true) ||
+            t.contains("Bairro ", ignoreCase = true) ||
+            t.contains("Região ", ignoreCase = true) ||
+            t.contains(" – ") || t.contains(" - ") ||
+            t.matches(Regex(".*[A-Z]{2}\\s*$")) ||       // termina com sigla de estado
+            t.matches(Regex(".*\\d{5}-\\d{3}.*")) ||       // contém CEP
+            t.matches(Regex("^[A-Z].*\\d+.*"))             // começa com maiúscula + contém número
+        )
+    }
+
+    /** Descarta textos que são métricas da corrida, não endereços */
+    private fun looksLikeMetric(text: String): Boolean {
+        val t = text.trim()
+        return t.matches(Regex("\\d+[.,]\\d+\\s*km", RegexOption.IGNORE_CASE)) ||
+            t.matches(Regex("\\d+\\s*minutos?", RegexOption.IGNORE_CASE)) ||
+            t.matches(Regex("R\\$\\s*[\\d.,]+")) ||
+            t.matches(Regex("\\+\\s*R\\$\\s*[\\d.,]+")) ||
+            t.matches(Regex("\\d[.,]\\d{2}\\s*\\(\\d+\\)"))  // rating
     }
 
 }

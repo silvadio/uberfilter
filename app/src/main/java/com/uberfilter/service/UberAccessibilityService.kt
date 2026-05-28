@@ -6,11 +6,11 @@ import android.view.accessibility.AccessibilityEvent
 import com.uberfilter.data.FilterCriteriaStore
 import com.uberfilter.data.FinanceDatabase
 import com.uberfilter.data.RideHistoryRepository
+import com.uberfilter.data.UndesiredLocationStore
+import com.uberfilter.domain.GeofenceChecker
 import com.uberfilter.domain.RideEvaluator
-import com.uberfilter.model.EvaluationColor
-import com.uberfilter.model.FilterCriteria
-import com.uberfilter.model.RideOffer
-import com.uberfilter.model.RideRecord
+import com.uberfilter.domain.UndesiredLocationChecker
+import com.uberfilter.model.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 
@@ -19,22 +19,18 @@ class UberAccessibilityService : AccessibilityService() {
     private lateinit var overlayManager: OverlayManager
     private lateinit var criteriaStore: FilterCriteriaStore
     private lateinit var rideHistoryRepo: RideHistoryRepository
+    private lateinit var locationStore: UndesiredLocationStore
 
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
-    // Critérios em memória — atualizados em background, nunca lidos do disco no evento
     @Volatile private var cachedCriteria: FilterCriteria = FilterCriteria()
+    @Volatile private var cachedBlockedLocations: List<String> = emptyList()
+    @Volatile private var cachedGeofences: List<GeofenceEntry> = emptyList()
 
-    // Flag: assistente está habilitado pelo usuário?
     @Volatile private var assistantEnabled = true
 
-    // Debounce — só processa após 300ms sem novos eventos
     private var debounceJob: Job? = null
-
-    // Último cartão exibido — evita re-exibir o mesmo
     private var lastOfferId: String? = null
-
-    // Flag: cartão está visível na tela?
     private var cardVisible = false
 
     override fun onServiceConnected() {
@@ -44,6 +40,7 @@ class UberAccessibilityService : AccessibilityService() {
         rideHistoryRepo = RideHistoryRepository(
             FinanceDatabase.getInstance(applicationContext).rideHistoryDao()
         )
+        locationStore = UndesiredLocationStore(applicationContext)
 
         serviceInfo = serviceInfo.also { info ->
             info.eventTypes =
@@ -56,17 +53,27 @@ class UberAccessibilityService : AccessibilityService() {
             info.packageNames = arrayOf("com.ubercab.driver", "com.app99.driver")
         }
 
-        // Carrega critérios uma vez e mantém atualizado em memória
         scope.launch {
             criteriaStore.criteriaFlow.collect { criteria ->
                 cachedCriteria = criteria
             }
         }
 
-        // Monitora estado do switch assistente — zero I/O no evento
         scope.launch {
             criteriaStore.assistantEnabledFlow.collect { enabled ->
                 assistantEnabled = enabled
+            }
+        }
+
+        scope.launch {
+            locationStore.textLocationsFlow.collect { locations ->
+                cachedBlockedLocations = locations
+            }
+        }
+
+        scope.launch {
+            locationStore.geofencesFlow.collect { geofences ->
+                cachedGeofences = geofences
             }
         }
     }
@@ -75,7 +82,6 @@ class UberAccessibilityService : AccessibilityService() {
         event ?: return
         val pkg = event.packageName?.toString() ?: ""
 
-        // Se mudou de janela para fora da Uber/99, esconde popup imediatamente
         if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             if (!pkg.contains("ubercab") && !pkg.contains("app99")) {
                 if (cardVisible) {
@@ -87,8 +93,6 @@ class UberAccessibilityService : AccessibilityService() {
             }
         }
 
-        // Debounce: cancela job anterior e agenda novo após 300ms
-        // Isso garante que só processa quando a tela parou de mudar
         debounceJob?.cancel()
         debounceJob = scope.launch {
             delay(300L)
@@ -97,11 +101,9 @@ class UberAccessibilityService : AccessibilityService() {
     }
 
     private fun processCurrentScreen() {
-        // Switch desligado — não processa nada, zero overhead
         if (!assistantEnabled) return
 
         val root = rootInActiveWindow ?: run {
-            // Sem janela ativa — esconde
             if (cardVisible) {
                 cardVisible = false
                 lastOfferId = null
@@ -116,7 +118,6 @@ class UberAccessibilityService : AccessibilityService() {
         val offer = parser.parse(root)
 
         if (offer == null) {
-            // Cartão sumiu da tela
             if (cardVisible) {
                 cardVisible = false
                 lastOfferId = null
@@ -125,20 +126,40 @@ class UberAccessibilityService : AccessibilityService() {
             return
         }
 
-        // ID do cartão atual — valor + distância da viagem
         val offerId = "${"%.2f".format(offer.totalValue)}|${"%.1f".format(offer.tripDistanceKm)}"
-
-        // Mesmo cartão já exibido — ignora
         if (offerId == lastOfferId) return
 
         lastOfferId = offerId
         cardVisible = true
 
-        // Usa critérios já em memória — zero I/O
-        val evaluation = RideEvaluator.evaluate(offer, cachedCriteria)
+        // 1. Verificação textual (rápida, <1ms)
+        val textMatch = UndesiredLocationChecker.check(offer.destination, cachedBlockedLocations)
+
+        // 2. Verificação por raio (geocoding, ~50-500ms)
+        val geofenceMatch = if (textMatch == null && cachedGeofences.isNotEmpty()) {
+            GeofenceChecker.check(offer.destination, cachedGeofences, applicationContext)
+        } else null
+
+        val evaluation = when {
+            textMatch != null -> RideEvaluation(
+                score = 0.0,
+                color = EvaluationColor.BLOCKED,
+                results = emptyList(),
+                blockedLocation = textMatch.term,
+                blockedType = BlockedType.TEXT
+            )
+            geofenceMatch != null -> RideEvaluation(
+                score = 0.0,
+                color = EvaluationColor.BLOCKED,
+                results = emptyList(),
+                blockedLocation = geofenceMatch.term,
+                blockedType = BlockedType.GEOFENCE
+            )
+            else -> RideEvaluator.evaluate(offer, cachedCriteria)
+        }
+
         overlayManager.show(offer, evaluation)
 
-        // Auto-save fire-and-forget — a cor de fundo do popup já informa a classificação
         scope.launch {
             rideHistoryRepo.insert(
                 RideRecord(
