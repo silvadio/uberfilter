@@ -5,8 +5,10 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -36,6 +38,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.driveq.model.GeofenceEntry
 import com.driveq.ui.SettingsViewModel
+import com.driveq.ui.components.BaseListCard
 import com.driveq.ui.theme.*
 import kotlinx.coroutines.delay
 
@@ -112,12 +115,15 @@ fun DestinosScreen(vm: SettingsViewModel) {
 private fun TextoTab(vm: SettingsViewModel, blockedLocations: List<String>) {
     var showAddDialog by remember { mutableStateOf(false) }
     var highlightTrigger by remember { mutableStateOf<String?>(null) }
-    val listScrollState = rememberScrollState()
+    val listState = rememberLazyListState()
 
     LaunchedEffect(highlightTrigger) {
         if (highlightTrigger != null) {
             delay(120)
-            listScrollState.animateScrollTo(listScrollState.maxValue)
+            val targetIndex = blockedLocations.indexOfFirst { it == highlightTrigger }
+            if (targetIndex >= 0) {
+                listState.animateScrollToItem(targetIndex + 1) // +1 compensa o header
+            }
             delay(1500)
             highlightTrigger = null
         }
@@ -132,29 +138,25 @@ private fun TextoTab(vm: SettingsViewModel, blockedLocations: List<String>) {
                 modifier = Modifier.align(Alignment.Center)
             )
         } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(listScrollState)
-                    .padding(bottom = 88.dp),
-                verticalArrangement = Arrangement.spacedBy(0.dp)
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(end = 20.dp, bottom = 88.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                SectionDivider("Locais (${blockedLocations.size})")
-                Spacer(Modifier.height(8.dp))
-                blockedLocations.forEachIndexed { index, location ->
+                item {
+                    SectionHeader("LOCAIS (${blockedLocations.size})")
+                }
+                itemsIndexed(
+                    items = blockedLocations,
+                    key = { _, location -> location }
+                ) { _, location ->
                     val isHighlighted = highlightTrigger == location
                     TextLocationItem(
                         location = location,
                         isHighlighted = isHighlighted,
                         onRemove = { vm.removeBlockedLocation(location) }
                     )
-                    if (index < blockedLocations.lastIndex) {
-                        HorizontalDivider(
-                            modifier = Modifier.padding(vertical = 4.dp),
-                            color = WarmOutline.copy(alpha = 0.2f),
-                            thickness = 0.5.dp
-                        )
-                    }
                 }
             }
         }
@@ -199,13 +201,16 @@ private fun RaioTab(vm: SettingsViewModel, geofences: List<GeofenceEntry>) {
     val centerLatLng = remember { mutableStateOf(Pair(-22.8267, -43.0519)) }
 
     // Highlight & scroll state
-    val cardScrollState = rememberScrollState()
+    val cardListState = rememberLazyListState()
     var highlightTrigger by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(highlightTrigger) {
         if (highlightTrigger != null) {
             delay(120)
-            cardScrollState.animateScrollTo(cardScrollState.maxValue)
+            val targetIndex = geofences.indexOfFirst { it.addressLabel == highlightTrigger }
+            if (targetIndex >= 0) {
+                cardListState.animateScrollToItem(targetIndex + 1) // +1 compensa o header
+            }
             delay(1500)
             highlightTrigger = null
         }
@@ -220,28 +225,24 @@ private fun RaioTab(vm: SettingsViewModel, geofences: List<GeofenceEntry>) {
                 modifier = Modifier.align(Alignment.Center)
             )
         } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(cardScrollState)
-                    .padding(bottom = 88.dp),
-                verticalArrangement = Arrangement.spacedBy(0.dp)
+            LazyColumn(
+                state = cardListState,
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(end = 20.dp, bottom = 88.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                SectionDivider("Regiões (${geofences.size})")
-                Spacer(Modifier.height(8.dp))
-                geofences.forEachIndexed { index, entry ->
+                item {
+                    SectionHeader("REGIÕES (${geofences.size})")
+                }
+                itemsIndexed(
+                    items = geofences,
+                    key = { _, entry -> entry.addressLabel }
+                ) { _, entry ->
                     GeofenceItem(
                         entry = entry,
                         isHighlighted = highlightTrigger == entry.addressLabel,
                         onRemove = { vm.removeGeofence(entry) }
                     )
-                    if (index < geofences.lastIndex) {
-                        HorizontalDivider(
-                            modifier = Modifier.padding(vertical = 4.dp),
-                            color = WarmOutline.copy(alpha = 0.2f),
-                            thickness = 0.5.dp
-                        )
-                    }
                 }
             }
         }
@@ -418,39 +419,47 @@ private fun GeofenceItem(
         label = "highlightGeofenceBg"
     )
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(bgColor, RoundedCornerShape(8.dp))
-            .padding(horizontal = 8.dp, vertical = 6.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = entry.addressLabel,
-                color = WarmOnBg,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                text = "${fmt1(entry.radiusKm)} km",
-                color = WarmOnSurfaceVariant,
-                fontSize = 11.sp
-            )
-        }
-        IconButton(
-            onClick = onRemove,
-            modifier = Modifier.size(32.dp)
+    BaseListCard {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(bgColor, RoundedCornerShape(16.dp))
         ) {
-            Icon(
-                imageVector = Icons.Outlined.Delete,
-                contentDescription = "Remover",
-                tint = RedFinance,
-                modifier = Modifier.size(18.dp)
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(14.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = entry.addressLabel,
+                        color = WarmOnBg,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        text = "${fmt1(entry.radiusKm)} km",
+                        color = WarmOnSurfaceVariant,
+                        fontSize = 12.sp
+                    )
+                }
+                IconButton(
+                    onClick = onRemove,
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Delete,
+                        contentDescription = "Remover",
+                        tint = RedFinance.copy(alpha = 0.7f),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
         }
     }
 }
@@ -469,30 +478,38 @@ private fun TextLocationItem(
         label = "highlightTextBg"
     )
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(bgColor, RoundedCornerShape(8.dp))
-            .padding(horizontal = 8.dp, vertical = 6.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = location,
-            color = WarmOnBg,
-            fontSize = 14.sp,
-            modifier = Modifier.weight(1f)
-        )
-        IconButton(
-            onClick = onRemove,
-            modifier = Modifier.size(32.dp)
+    BaseListCard {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(bgColor, RoundedCornerShape(16.dp))
         ) {
-            Icon(
-                imageVector = Icons.Outlined.Delete,
-                contentDescription = "Remover",
-                tint = RedFinance,
-                modifier = Modifier.size(18.dp)
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(14.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = location,
+                    color = WarmOnBg,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.weight(1f)
+                )
+                IconButton(
+                    onClick = onRemove,
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Delete,
+                        contentDescription = "Remover",
+                        tint = RedFinance.copy(alpha = 0.7f),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
         }
     }
 }
@@ -663,30 +680,15 @@ private fun OsmMapView(
 // ── Componentes utilitários ────────────────────────────────────────────────────
 
 @Composable
-private fun SectionDivider(text: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        HorizontalDivider(
-            modifier = Modifier.weight(1f),
-            color = WarmOutline.copy(alpha = 0.4f),
-            thickness = 0.5.dp
-        )
-        Text(
-            text = text,
-            color = WarmOnSurfaceVariant,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 0.5.sp,
-            modifier = Modifier.padding(horizontal = 12.dp)
-        )
-        HorizontalDivider(
-            modifier = Modifier.weight(1f),
-            color = WarmOutline.copy(alpha = 0.4f),
-            thickness = 0.5.dp
-        )
-    }
+private fun SectionHeader(text: String) {
+    Text(
+        text = text,
+        color = WarmOnSurfaceVariant,
+        fontSize = 13.sp,
+        fontWeight = FontWeight.ExtraBold,
+        letterSpacing = 0.8.sp,
+        modifier = Modifier.padding(top = 4.dp)
+    )
 }
 
 @Composable

@@ -1,6 +1,5 @@
 package com.driveq.ui.components
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -9,8 +8,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -33,14 +30,7 @@ fun TransactionCard(
     val prefix = if (isIncome) "+" else "-"
     val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .shadow(8.dp, RoundedCornerShape(16.dp), clip = false, ambientColor = Color.Black.copy(alpha = 0.42f), spotColor = Color.Black.copy(alpha = 0.30f))
-            .border(0.5.dp, WarmOutline.copy(alpha = 0.25f), RoundedCornerShape(16.dp)),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = PureWhite)
-    ) {
+    BaseListCard(modifier = modifier) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
