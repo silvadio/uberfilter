@@ -51,6 +51,12 @@ class LoginViewModel(app: Application) : AndroidViewModel(app) {
         initialValue = false
     )
 
+    val loggedPhotoUrl: StateFlow<String?> = store.photoUrlFlow.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = null
+    )
+
     private val _loginResult = MutableStateFlow<LoginResult?>(null)
     val loginResult: StateFlow<LoginResult?> = _loginResult
 

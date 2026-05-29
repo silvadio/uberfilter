@@ -12,9 +12,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.rememberAsyncImagePainter
 import com.driveq.ui.FinanceViewModel
 import com.driveq.ui.HomeViewModel
 import com.driveq.ui.LoginViewModel
@@ -41,6 +43,10 @@ fun HomeScreen(vm: HomeViewModel, financeVm: FinanceViewModel, settingsVm: Setti
         ?.take(2)
         ?.joinToString("") { it.first().uppercase() } ?: ""
 
+    val photoUrl by loginVm.loggedPhotoUrl.collectAsState()
+    val rawPainter = rememberAsyncImagePainter(model = photoUrl)
+    val avatarPainter: Painter? = if (photoUrl != null) rawPainter else null
+
     var showGoalDialog by remember { mutableStateOf(false) }
 
     if (showGoalDialog) {
@@ -57,7 +63,8 @@ fun HomeScreen(vm: HomeViewModel, financeVm: FinanceViewModel, settingsVm: Setti
     ) {
         PremiumHeader(
             greetingName = greeting,
-            subtitle = "Bem-vindo ao DriverIQ",
+            subtitle = "Bem-vindo ao DriveQ",
+            avatarPainter = avatarPainter,
             avatarInitials = initials,
             onSettingsClick = { /* TODO: navegar para configurações */ },
             onLogoutClick = onLogout,

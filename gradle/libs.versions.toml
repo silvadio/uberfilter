@@ -6,6 +6,7 @@ lifecycleRuntimeKtx = "2.8.3"
 activityCompose = "1.9.1"
 composeBom = "2024.08.00"
 playservicesauth = "21.3.0"
+coil = "2.7.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -19,6 +20,7 @@ androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 playservices-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playservicesauth" }
+coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

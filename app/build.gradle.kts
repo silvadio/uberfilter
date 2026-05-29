@@ -75,6 +75,9 @@ dependencies {
     // Google Sign-In
     implementation(libs.playservices.auth)
 
+    // Coil — carregamento de imagens (avatar Google)
+    implementation(libs.coil.compose)
+
     // Gson — serialização de geofences
     implementation("com.google.code.gson:gson:2.10.1")
 

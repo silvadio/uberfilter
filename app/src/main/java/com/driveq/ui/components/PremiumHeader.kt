@@ -1,5 +1,6 @@
 package com.driveq.ui.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -149,10 +150,9 @@ private fun AvatarContent(
 ) {
     when {
         painter != null -> {
-            Icon(
+            Image(
                 painter = painter,
                 contentDescription = "Avatar do usuário",
-                tint = OnWarmYellow,
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(CircleShape)
