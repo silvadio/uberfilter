@@ -74,7 +74,7 @@ fun LoginScreen(
         ) {
             // ── Logo / App Name ───────────────────────────────────────────
             Text(
-                text = "DriverIQ",
+                text = "DriveQ",
                 color = WarmYellow,
                 fontSize = 38.sp,
                 fontWeight = FontWeight.ExtraBold,
