@@ -18,8 +18,10 @@ data class RideOffer(
 ) {
     val effectiveValue: Double get() = totalValue + bonusValue
 
-    val valuePerKm: Double get() =
-        if (tripDistanceKm > 0) effectiveValue / tripDistanceKm else 0.0
+    val valuePerKm: Double get() {
+        val totalKm = tripDistanceKm + distanceToPickupKm
+        return if (totalKm > 0) effectiveValue / totalKm else 0.0
+    }
 
     val valuePerMin: Double get() =
         if (tripDurationMin > 0) effectiveValue / tripDurationMin else 0.0
