@@ -1,9 +1,9 @@
 <resources>
-    <string name="app_name">UberFilter</string>
-    <string name="accessibility_service_label">UberFilter – Leitor de Corridas</string>
+    <string name="app_name">DriveQ</string>
+    <string name="accessibility_service_label">DriveQ – Leitor de Corridas</string>
     <string name="accessibility_service_description">Lê os dados do cartão de convite da Uber e exibe um alerta indicando se a corrida é boa ou ruim com base nos seus critérios.</string>
-    <string name="notification_channel_name">UberFilter Ativo</string>
-    <string name="notification_channel_desc">Mantém o UberFilter rodando em segundo plano</string>
-    <string name="notification_title">UberFilter está ativo</string>
+    <string name="notification_channel_name">DriveQ Ativo</string>
+    <string name="notification_channel_desc">Mantém o DriveQ rodando em segundo plano</string>
+    <string name="notification_title">DriveQ está ativo</string>
     <string name="notification_text">Monitorando corridas da Uber…</string>
 </resources>

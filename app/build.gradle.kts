@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.uberfilter"
+    namespace = "com.driveq"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.uberfilter"
+        applicationId = "com.driveq"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
@@ -71,6 +71,9 @@ dependencies {
 
     // osmdroid — mapa gratuito (OpenStreetMap)
     implementation("org.osmdroid:osmdroid-android:6.1.20")
+
+    // Google Sign-In
+    implementation(libs.playservices.auth)
 
     // Gson — serialização de geofences
     implementation("com.google.code.gson:gson:2.10.1")

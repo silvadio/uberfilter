@@ -19,3 +19,7 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# ── Room (impede ofuscação de entidades e DAOs) ──────────────────────────────
+-keep class com.driveq.model.** { *; }
+-keep class com.driveq.data.*Dao { *; }

@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "UberFilter"
+rootProject.name = "DriveQ"
 include(":app")
