@@ -1,4 +1,4 @@
-package com.driveq.ui.screens.home
+package com.driveq.ui.screens.destinos
 
 import android.location.Geocoder
 import androidx.compose.animation.animateColorAsState
