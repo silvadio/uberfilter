@@ -6,7 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AccountBalanceWallet
+import androidx.compose.material.icons.outlined.ReceiptLong
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -160,7 +160,7 @@ private fun EmptyState() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
-                Icons.Outlined.AccountBalanceWallet,
+                Icons.Outlined.ReceiptLong,
                 contentDescription = null,
                 tint = WarmYellow.copy(alpha = 0.5f),
                 modifier = Modifier.size(52.dp)

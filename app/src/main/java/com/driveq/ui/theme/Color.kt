@@ -32,7 +32,7 @@ val RedGlow          = Color(0x33D32F2F)
 // ── Stats / Gamificação ─────────────────────────────────────────────────────
 val RedBad           = Color(0xFFC62828)
 val YellowMedium     = Color(0xFFF9A825)
-val GreenGood        = Color(0xFF1A1A1A)   // preto no lugar do verde
+val GreenGood        = Color(0xFF1B8C3E)   // preto no lugar do verde
 
 // ── Transparentes para sobreposição (sobre fundo claro) ─────────────────────
 val BlackAlpha10     = Color(0x1A000000)
