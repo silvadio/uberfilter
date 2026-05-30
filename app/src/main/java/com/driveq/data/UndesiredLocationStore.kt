@@ -66,6 +66,19 @@ class UndesiredLocationStore(private val context: Context) {
         }
     }
 
+    suspend fun updateTextLocation(old: String, new: String) {
+        val normalized = normalize(new)
+        if (normalized.isBlank()) return
+        context.locationDataStore.edit { prefs ->
+            val current = readTextList(prefs[TEXT_KEY])
+            // Verifica duplicata excluindo o valor que está sendo editado
+            if (current.any { it != old && normalize(it) == normalized }) return@edit
+            prefs[TEXT_KEY] = gson.toJson(
+                current.map { if (it == old) new.trim() else it }
+            )
+        }
+    }
+
     // ── Geofences ──────────────────────────────────────────────────────────────
 
     suspend fun addGeofence(entry: GeofenceEntry) {

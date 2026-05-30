@@ -56,6 +56,10 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch { locationStore.removeTextLocation(name) }
     }
 
+    fun updateBlockedLocation(oldName: String, newName: String) {
+        viewModelScope.launch { locationStore.updateTextLocation(oldName, newName) }
+    }
+
     fun addGeofence(entry: GeofenceEntry) {
         viewModelScope.launch { locationStore.addGeofence(entry) }
     }

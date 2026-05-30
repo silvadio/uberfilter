@@ -113,6 +113,7 @@ fun DestinosScreen(vm: SettingsViewModel) {
 @Composable
 private fun TextoTab(vm: SettingsViewModel, blockedLocations: List<String>) {
     var showAddDialog by remember { mutableStateOf(false) }
+    var editingLocation: String? by remember { mutableStateOf(null) }
     var highlightTrigger by remember { mutableStateOf<String?>(null) }
     val listState = rememberLazyListState()
 
@@ -154,6 +155,10 @@ private fun TextoTab(vm: SettingsViewModel, blockedLocations: List<String>) {
                     TextLocationItem(
                         location = location,
                         isHighlighted = isHighlighted,
+                        onClick = {
+                            editingLocation = location
+                            showAddDialog = true
+                        },
                         onRemove = { vm.removeBlockedLocation(location) }
                     )
                 }
@@ -161,7 +166,10 @@ private fun TextoTab(vm: SettingsViewModel, blockedLocations: List<String>) {
         }
 
         FloatingActionButton(
-            onClick = { showAddDialog = true },
+            onClick = {
+                editingLocation = null
+                showAddDialog = true
+            },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(16.dp),
@@ -176,11 +184,20 @@ private fun TextoTab(vm: SettingsViewModel, blockedLocations: List<String>) {
     if (showAddDialog) {
         AddLocationDialog(
             blockedLocations = blockedLocations,
-            onDismiss = { showAddDialog = false },
-            onConfirm = { location ->
-                vm.addBlockedLocation(location)
-                highlightTrigger = location
+            editingLocation = editingLocation,
+            onDismiss = {
                 showAddDialog = false
+                editingLocation = null
+            },
+            onConfirm = { newValue ->
+                if (editingLocation != null) {
+                    vm.updateBlockedLocation(editingLocation!!, newValue)
+                } else {
+                    vm.addBlockedLocation(newValue)
+                }
+                highlightTrigger = newValue
+                showAddDialog = false
+                editingLocation = null
             }
         )
     }
@@ -523,6 +540,7 @@ private fun GeofenceItem(
 private fun TextLocationItem(
     location: String,
     isHighlighted: Boolean,
+    onClick: () -> Unit,
     onRemove: () -> Unit
 ) {
     val bgColor by animateColorAsState(
@@ -531,7 +549,9 @@ private fun TextLocationItem(
         label = "highlightTextBg"
     )
 
-    BaseListCard {
+    BaseListCard(
+        modifier = Modifier.clickable(onClick = onClick)
+    ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -552,6 +572,17 @@ private fun TextLocationItem(
                     modifier = Modifier.weight(1f)
                 )
                 IconButton(
+                    onClick = onClick,
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Edit,
+                        contentDescription = "Editar",
+                        tint = WarmOnSurfaceVariant.copy(alpha = 0.6f),
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+                IconButton(
                     onClick = onRemove,
                     modifier = Modifier.size(36.dp)
                 ) {
@@ -567,16 +598,18 @@ private fun TextLocationItem(
     }
 }
 
-// ── Dialog de adição de local textual ──────────────────────────────────────────
+// ── Dialog de adição/edição de local textual ──────────────────────────────────
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AddLocationDialog(
     blockedLocations: List<String>,
+    editingLocation: String? = null,
     onDismiss: () -> Unit,
     onConfirm: (String) -> Unit
 ) {
-    var newLocation by remember { mutableStateOf("") }
+    val isEditing = editingLocation != null
+    var newLocation by remember(editingLocation) { mutableStateOf(editingLocation ?: "") }
     var duplicateError by remember { mutableStateOf(false) }
 
     AlertDialog(
@@ -585,7 +618,7 @@ private fun AddLocationDialog(
         containerColor = WarmWhite,
         title = {
             Text(
-                "Adicionar Local",
+                if (isEditing) "Editar Local" else "Adicionar Local",
                 fontWeight = FontWeight.Bold,
                 color = WarmOnBg,
                 fontSize = 18.sp
@@ -631,8 +664,9 @@ private fun AddLocationDialog(
                 onClick = {
                     val trimmed = newLocation.trim()
                     if (trimmed.isBlank()) return@Button
+                    // Verifica duplicata excluindo o valor que está sendo editado
                     val alreadyExists = blockedLocations.any {
-                        normalizeForComparison(it) == normalizeForComparison(trimmed)
+                        it != editingLocation && normalizeForComparison(it) == normalizeForComparison(trimmed)
                     }
                     if (alreadyExists) {
                         duplicateError = true
@@ -647,7 +681,14 @@ private fun AddLocationDialog(
                     contentColor = OnWarmYellow
                 )
             ) {
-                Text("Adicionar", fontWeight = FontWeight.Bold)
+                if (isEditing) {
+                    Icon(Icons.Filled.Save, null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(8.dp))
+                }
+                Text(
+                    if (isEditing) "Salvar" else "Adicionar",
+                    fontWeight = FontWeight.Bold
+                )
             }
         },
         dismissButton = {
