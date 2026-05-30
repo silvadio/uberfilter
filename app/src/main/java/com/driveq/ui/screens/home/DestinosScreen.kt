@@ -85,14 +85,14 @@ fun DestinosScreen(vm: SettingsViewModel) {
             Tab(
                 selected = innerTab == 0,
                 onClick = { innerTab = 0 },
-                text = { Text("Raio", fontWeight = if (innerTab == 0) FontWeight.Bold else FontWeight.Normal, fontSize = 13.sp) },
+                text = { Text("Por Região", fontWeight = if (innerTab == 0) FontWeight.Bold else FontWeight.Normal, fontSize = 13.sp) },
                 selectedContentColor = WarmYellow,
                 unselectedContentColor = WarmOnSurfaceVariant
             )
             Tab(
                 selected = innerTab == 1,
                 onClick = { innerTab = 1 },
-                text = { Text("Texto", fontWeight = if (innerTab == 1) FontWeight.Bold else FontWeight.Normal, fontSize = 13.sp) },
+                text = { Text("Por Local", fontWeight = if (innerTab == 1) FontWeight.Bold else FontWeight.Normal, fontSize = 13.sp) },
                 selectedContentColor = WarmYellow,
                 unselectedContentColor = WarmOnSurfaceVariant
             )
@@ -133,8 +133,9 @@ private fun TextoTab(vm: SettingsViewModel, blockedLocations: List<String>) {
         if (blockedLocations.isEmpty()) {
             EmptyStatePlaceholder(
                 icon = Icons.Outlined.LocationOff,
-                title = "Nenhum local cadastrado",
+                title = "Nenhum local indesejado",
                 subtitle = "Use o botão + para adicionar",
+                description = "Defina locais específicos onde não deseja realizar corridas",
                 modifier = Modifier.align(Alignment.Center)
             )
         } else {
@@ -261,8 +262,9 @@ private fun RaioTab(vm: SettingsViewModel, geofences: List<GeofenceEntry>) {
         if (geofences.isEmpty()) {
             EmptyStatePlaceholder(
                 icon = Icons.Outlined.TravelExplore,
-                title = "Nenhuma região bloqueada",
+                title = "Nenhuma região indesejada",
                 subtitle = "Use o botão + para adicionar",
+                description = "Defina as regiões onde não deseja realizar corridas",
                 modifier = Modifier.align(Alignment.Center)
             )
         } else {
@@ -790,6 +792,7 @@ private fun EmptyStatePlaceholder(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     title: String,
     subtitle: String,
+    description: String? = null,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -810,6 +813,13 @@ private fun EmptyStatePlaceholder(
             color = WarmOnSurfaceVariant,
             fontSize = 13.sp
         )
+        if (description != null) {
+            Text(
+                text = description,
+                color = WarmOnSurfaceVariant.copy(alpha = 0.7f),
+                fontSize = 12.sp
+            )
+        }
         Text(
             text = subtitle,
             color = WarmOnSurfaceVariant.copy(alpha = 0.6f),
