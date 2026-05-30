@@ -78,6 +78,7 @@ enum class BlockedType { TEXT, GEOFENCE }
 
 /** Região bloqueada por raio geográfico */
 data class GeofenceEntry(
+    val id: String = java.util.UUID.randomUUID().toString(),
     val centerLat: Double,
     val centerLng: Double,
     val radiusKm: Double,

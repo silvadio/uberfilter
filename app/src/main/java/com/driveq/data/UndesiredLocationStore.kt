@@ -42,7 +42,7 @@ class UndesiredLocationStore(private val context: Context) {
         if (raw.isBlank()) emptyList()
         else runCatching {
             gson.fromJson<List<GeofenceEntry>>(raw, object : TypeToken<List<GeofenceEntry>>() {}.type)
-        }.getOrDefault(emptyList())
+        }.getOrDefault(emptyList()).map { it.withId() }
     }
 
     // ── Termos textuais ────────────────────────────────────────────────────────
@@ -79,9 +79,16 @@ class UndesiredLocationStore(private val context: Context) {
         context.locationDataStore.edit { prefs ->
             val current = readGeofenceList(prefs[GEOFENCE_KEY])
             prefs[GEOFENCE_KEY] = gson.toJson(
-                current.filter {
-                    it.centerLat != entry.centerLat || it.centerLng != entry.centerLng
-                }
+                current.filter { it.id != entry.id }
+            )
+        }
+    }
+
+    suspend fun updateGeofence(updated: GeofenceEntry) {
+        context.locationDataStore.edit { prefs ->
+            val current = readGeofenceList(prefs[GEOFENCE_KEY])
+            prefs[GEOFENCE_KEY] = gson.toJson(
+                current.map { if (it.id == updated.id) updated else it }
             )
         }
     }
@@ -99,7 +106,15 @@ class UndesiredLocationStore(private val context: Context) {
         if (raw.isNullOrBlank()) return emptyList()
         return runCatching {
             gson.fromJson<List<GeofenceEntry>>(raw, object : TypeToken<List<GeofenceEntry>>() {}.type)
-        }.getOrDefault(emptyList())
+        }.getOrDefault(emptyList()).map { it.withId() }
+    }
+
+    /** Garante que a entry tenha ID estável (migração de versões antigas sem o campo) */
+    private fun GeofenceEntry.withId(): GeofenceEntry {
+        if (id.isNotBlank()) return this
+        // ID determinístico baseado no conteúdo – garante estabilidade entre leituras
+        val stableId = "geo_${centerLat}_${centerLng}_${addressLabel.hashCode()}"
+        return copy(id = stableId)
     }
 
     private fun normalize(text: String): String {

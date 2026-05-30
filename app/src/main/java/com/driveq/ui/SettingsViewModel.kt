@@ -63,4 +63,8 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
     fun removeGeofence(entry: GeofenceEntry) {
         viewModelScope.launch { locationStore.removeGeofence(entry) }
     }
+
+    fun updateGeofence(updated: GeofenceEntry) {
+        viewModelScope.launch { locationStore.updateGeofence(updated) }
+    }
 }

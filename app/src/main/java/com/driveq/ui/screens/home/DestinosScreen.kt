@@ -4,20 +4,20 @@ import android.location.Geocoder
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.outlined.CloseFullscreen
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Fullscreen
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.LocationOff
 import androidx.compose.material.icons.outlined.TravelExplore
 import androidx.compose.material3.*
@@ -25,7 +25,6 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -194,6 +193,7 @@ private fun TextoTab(vm: SettingsViewModel, blockedLocations: List<String>) {
 private fun RaioTab(vm: SettingsViewModel, geofences: List<GeofenceEntry>) {
     val context = LocalContext.current
     var showFullscreen by remember { mutableStateOf(false) }
+    var editingEntry: GeofenceEntry? by remember { mutableStateOf(null) }
 
     // Dialog map states
     var radiusKm by remember { mutableFloatStateOf(1.5f) }
@@ -216,6 +216,30 @@ private fun RaioTab(vm: SettingsViewModel, geofences: List<GeofenceEntry>) {
         }
     }
 
+    /** Abre o mapa pré-carregado com os dados da entry (modo edição) */
+    fun openForEdit(entry: GeofenceEntry) {
+        editingEntry = entry
+        centerLatLng.value = Pair(entry.centerLat, entry.centerLng)
+        radiusKm = entry.radiusKm.toFloat()
+        centerLabel = entry.addressLabel
+        showFullscreen = true
+    }
+
+    /** Abre o mapa em branco (modo criação) */
+    fun openForCreate() {
+        editingEntry = null
+        centerLatLng.value = Pair(-22.8267, -43.0519)
+        radiusKm = 1.5f
+        centerLabel = ""
+        showFullscreen = true
+    }
+
+    /** Fecha o dialog e limpa estado de edição */
+    fun closeDialog() {
+        showFullscreen = false
+        editingEntry = null
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         if (geofences.isEmpty()) {
             EmptyStatePlaceholder(
@@ -236,11 +260,12 @@ private fun RaioTab(vm: SettingsViewModel, geofences: List<GeofenceEntry>) {
                 }
                 itemsIndexed(
                     items = geofences,
-                    key = { _, entry -> entry.addressLabel }
+                    key = { _, entry -> entry.id }
                 ) { _, entry ->
                     GeofenceItem(
                         entry = entry,
                         isHighlighted = highlightTrigger == entry.addressLabel,
+                        onClick = { openForEdit(entry) },
                         onRemove = { vm.removeGeofence(entry) }
                     )
                 }
@@ -248,7 +273,7 @@ private fun RaioTab(vm: SettingsViewModel, geofences: List<GeofenceEntry>) {
         }
 
         FloatingActionButton(
-            onClick = { showFullscreen = true },
+            onClick = { openForCreate() },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(16.dp),
@@ -262,8 +287,10 @@ private fun RaioTab(vm: SettingsViewModel, geofences: List<GeofenceEntry>) {
 
     // Fullscreen map dialog
     if (showFullscreen) {
+        val isEditing = editingEntry != null
+
         Dialog(
-            onDismissRequest = { showFullscreen = false },
+            onDismissRequest = { closeDialog() },
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
             Scaffold(
@@ -272,14 +299,14 @@ private fun RaioTab(vm: SettingsViewModel, geofences: List<GeofenceEntry>) {
                     TopAppBar(
                         title = {
                             Text(
-                                "Região Bloqueada",
+                                if (isEditing) "Editar Região" else "Nova Região",
                                 color = WarmOnBg,
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold
                             )
                         },
                         navigationIcon = {
-                            IconButton(onClick = { showFullscreen = false }) {
+                            IconButton(onClick = { closeDialog() }) {
                                 Icon(
                                     Icons.Filled.ArrowBack,
                                     contentDescription = "Voltar",
@@ -288,7 +315,7 @@ private fun RaioTab(vm: SettingsViewModel, geofences: List<GeofenceEntry>) {
                             }
                         },
                         actions = {
-                            IconButton(onClick = { showFullscreen = false }) {
+                            IconButton(onClick = { closeDialog() }) {
                                 Icon(
                                     Icons.Outlined.CloseFullscreen,
                                     contentDescription = "Recolher",
@@ -337,7 +364,7 @@ private fun RaioTab(vm: SettingsViewModel, geofences: List<GeofenceEntry>) {
                             }
                             Button(
                                 onClick = {
-                                    val entry = GeofenceEntry(
+                                    val newEntry = GeofenceEntry(
                                         centerLat = centerLatLng.value.first,
                                         centerLng = centerLatLng.value.second,
                                         radiusKm = radiusKm.toDouble(),
@@ -345,9 +372,13 @@ private fun RaioTab(vm: SettingsViewModel, geofences: List<GeofenceEntry>) {
                                             "${String.format("%.4f", centerLatLng.value.first)}, ${String.format("%.4f", centerLatLng.value.second)}"
                                         }
                                     )
-                                    vm.addGeofence(entry)
-                                    highlightTrigger = entry.addressLabel
-                                    showFullscreen = false
+                                    if (isEditing) {
+                                        vm.updateGeofence(newEntry.copy(id = editingEntry!!.id))
+                                    } else {
+                                        vm.addGeofence(newEntry)
+                                    }
+                                    highlightTrigger = newEntry.addressLabel
+                                    closeDialog()
                                 },
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -358,9 +389,17 @@ private fun RaioTab(vm: SettingsViewModel, geofences: List<GeofenceEntry>) {
                                     contentColor = OnWarmYellow
                                 )
                             ) {
-                                Icon(Icons.Filled.Add, null, modifier = Modifier.size(18.dp))
+                                Icon(
+                                    if (isEditing) Icons.Filled.Save else Icons.Filled.Add,
+                                    null,
+                                    modifier = Modifier.size(18.dp)
+                                )
                                 Spacer(Modifier.width(8.dp))
-                                Text("Confirmar Região", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                Text(
+                                    if (isEditing) "Salvar Alterações" else "Confirmar Região",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp
+                                )
                             }
                         }
                     }
@@ -411,6 +450,7 @@ private fun RaioTab(vm: SettingsViewModel, geofences: List<GeofenceEntry>) {
 private fun GeofenceItem(
     entry: GeofenceEntry,
     isHighlighted: Boolean,
+    onClick: () -> Unit,
     onRemove: () -> Unit
 ) {
     val bgColor by animateColorAsState(
@@ -419,7 +459,9 @@ private fun GeofenceItem(
         label = "highlightGeofenceBg"
     )
 
-    BaseListCard {
+    BaseListCard(
+        modifier = Modifier.clickable(onClick = onClick)
+    ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -446,6 +488,17 @@ private fun GeofenceItem(
                         text = "${fmt1(entry.radiusKm)} km",
                         color = WarmOnSurfaceVariant,
                         fontSize = 12.sp
+                    )
+                }
+                IconButton(
+                    onClick = onClick,
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Edit,
+                        contentDescription = "Editar",
+                        tint = WarmOnSurfaceVariant.copy(alpha = 0.6f),
+                        modifier = Modifier.size(18.dp)
                     )
                 }
                 IconButton(
